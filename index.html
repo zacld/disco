@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DISCO — FX Lead Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0c0f;
+  --bg2: #111418;
+  --bg3: #181c22;
+  --bg4: #1e2430;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #e8eaf0;
+  --text2: #8b92a0;
+  --text3: #555d6b;
+  --accent: #00d4ff;
+  --accent2: #0099cc;
+  --green: #00e676;
+  --green2: #00c853;
+  --amber: #ffab40;
+  --red: #ff5252;
+  --purple: #b388ff;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; }
+body { min-height: 100vh; }
+
+/* SCANLINE OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* TOP BAR */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 48px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo {
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+}
+.logo span { color: var(--text3); font-weight: 400; }
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+.version { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+
+/* MAIN LAYOUT */
+.main { display: grid; grid-template-columns: 260px 1fr; height: calc(100vh - 48px); }
+
+/* SIDEBAR */
+.sidebar {
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 20px 0;
+}
+.sidebar-section { margin-bottom: 24px; }
+.sidebar-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  letter-spacing: 0.12em;
+  padding: 0 16px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-left: 2px solid transparent;
+}
+.sidebar-item:hover { background: var(--bg3); }
+.sidebar-item.active { background: rgba(0,212,255,0.06); border-left-color: var(--accent); }
+.sidebar-item-name { font-size: 13px; color: var(--text); }
+.sidebar-item.active .sidebar-item-name { color: var(--accent); }
+.sidebar-count {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  background: var(--bg3);
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+.control-panel { padding: 16px; }
+.ctrl-group { margin-bottom: 14px; }
+.ctrl-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: block;
+}
+select, input[type=text] {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 12px;
+  padding: 7px 10px;
+  border-radius: 4px;
+  appearance: none;
+  outline: none;
+  transition: border-color 0.15s;
+}
+select:focus, input:focus { border-color: var(--accent); }
+option { background: var(--bg3); }
+
+.pull-btn {
+  width: 100%;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-top: 8px;
+  text-transform: uppercase;
+}
+.pull-btn:hover { background: #33ddff; }
+.pull-btn:disabled { background: var(--bg4); color: var(--text3); cursor: not-allowed; }
+
+/* CONTENT AREA */
+.content { overflow-y: auto; display: flex; flex-direction: column; }
+
+/* STATS BAR */
+.stats-bar {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  flex-shrink: 0;
+}
+.stat-cell {
+  padding: 14px 20px;
+  border-right: 1px solid var(--border);
+}
+.stat-cell:last-child { border-right: none; }
+.stat-label-top {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.stat-val {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+}
+.stat-val.green { color: var(--green); }
+.stat-val.amber { color: var(--amber); }
+.stat-val.accent { color: var(--accent); }
+
+/* TOOLBAR */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  gap: 12px;
+  flex-shrink: 0;
+}
+.toolbar-left { display: flex; align-items: center; gap: 10px; }
+.search-wrap { position: relative; }
+.search-wrap input {
+  width: 240px;
+  padding-left: 28px;
+  font-size: 12px;
+}
+.search-icon {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text3);
+  font-size: 12px;
+  pointer-events: none;
+}
+.filter-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.05em;
+}
+.filter-btn:hover, .filter-btn.active { border-color: var(--accent); color: var(--accent); }
+.export-btn-top {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.05em;
+}
+.export-btn-top:hover { border-color: var(--green); color: var(--green); }
+.export-btn-top:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* PROGRESS */
+.progress-section {
+  padding: 20px;
+  display: none;
+}
+.progress-msg {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.progress-msg::before { content: '> '; color: var(--text3); }
+.progress-track {
+  height: 2px;
+  background: var(--bg4);
+  border-radius: 1px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  border-radius: 1px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 8px var(--accent);
+}
+
+/* TABLE */
+.table-area { flex: 1; overflow-y: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead { position: sticky; top: 0; z-index: 10; }
+th {
+  background: var(--bg3);
+  padding: 9px 16px;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+th:hover { color: var(--text2); }
+th.sorted { color: var(--accent); }
+td {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  max-width: 0;
+}
+tr:hover td { background: rgba(255,255,255,0.02); }
+.company-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+.company-sic {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+.fd-name { font-size: 13px; color: var(--accent); font-weight: 500; }
+.fd-since { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-top: 2px; }
+.no-fd { font-size: 12px; color: var(--text3); font-style: italic; }
+.score-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 3px;
+}
+.s-high { background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.2); }
+.s-med { background: rgba(255,171,64,0.1); color: var(--amber); border: 1px solid rgba(255,171,64,0.2); }
+.s-low { background: rgba(255,82,82,0.1); color: var(--red); border: 1px solid rgba(255,82,82,0.2); }
+.turnover { font-family: var(--mono); font-size: 13px; color: var(--text); }
+.currency-tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  margin-right: 3px;
+  margin-bottom: 2px;
+}
+.currency-tag.primary { border-color: rgba(0,212,255,0.3); color: var(--accent); }
+.action-cell { white-space: nowrap; }
+.cog-btn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: all 0.15s;
+  margin-right: 4px;
+}
+.cog-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.05); }
+.notes-btn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text3);
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 5px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.notes-btn:hover { border-color: var(--purple); color: var(--purple); }
+
+/* EMPTY STATE */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: var(--text3);
+  gap: 12px;
+}
+.empty-state .big { font-family: var(--mono); font-size: 40px; opacity: 0.2; }
+.empty-state p { font-size: 13px; }
+
+/* PAGINATION */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--bg2);
+  flex-shrink: 0;
+}
+.page-info { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+.page-btns { display: flex; gap: 6px; }
+.page-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 5px 14px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.page-btn:hover { border-color: var(--accent); color: var(--accent); }
+.page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  width: 480px;
+  max-width: 95vw;
+  padding: 24px;
+}
+.modal-title { font-family: var(--mono); font-size: 13px; color: var(--accent); margin-bottom: 16px; letter-spacing: 0.05em; }
+.modal textarea {
+  width: 100%;
+  height: 100px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 13px;
+  padding: 10px;
+  border-radius: 4px;
+  resize: none;
+  outline: none;
+}
+.modal textarea:focus { border-color: var(--accent); }
+.modal-btns { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 7px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+}
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 7px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.stage-select {
+  margin-top: 10px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .main { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .stats-bar { grid-template-columns: repeat(3,1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">DISCO<span> // FX LEAD INTELLIGENCE</span></div>
+  <div class="topbar-right">
+    <div class="status-dot"></div>
+    <span class="version">v2.0 — FD LAYER</span>
+  </div>
+</div>
+
+<div class="main">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Niche</div>
+      <div class="sidebar-item active" onclick="setNiche(this,'machinery')">
+        <span class="sidebar-item-name">Machinery / Equipment</span>
+        <span class="sidebar-count" id="cnt-machinery">—</span>
+      </div>
+      <div class="sidebar-item" onclick="setNiche(this,'textiles')">
+        <span class="sidebar-item-name">Textiles / Apparel</span>
+        <span class="sidebar-count" id="cnt-textiles">—</span>
+      </div>
+      <div class="sidebar-item" onclick="setNiche(this,'food')">
+        <span class="sidebar-item-name">Food / Drink Importers</span>
+        <span class="sidebar-count" id="cnt-food">—</span>
+      </div>
+      <div class="sidebar-item" onclick="setNiche(this,'aerospace')">
+        <span class="sidebar-item-name">Aerospace / Defence</span>
+        <span class="sidebar-count" id="cnt-aerospace">—</span>
+      </div>
+      <div class="sidebar-item" onclick="setNiche(this,'construction')">
+        <span class="sidebar-item-name">Construction Equipment</span>
+        <span class="sidebar-count" id="cnt-construction">—</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Filters</div>
+      <div class="control-panel">
+        <div class="ctrl-group">
+          <label class="ctrl-label">Min turnover</label>
+          <select id="minTurnover">
+            <option value="0">Any</option>
+            <option value="1">£1m+</option>
+            <option value="5" selected>£5m+</option>
+            <option value="10">£10m+</option>
+            <option value="25">£25m+</option>
+            <option value="50">£50m+</option>
+          </select>
+        </div>
+        <div class="ctrl-group">
+          <label class="ctrl-label">FD status</label>
+          <select id="fdFilter">
+            <option value="all">All leads</option>
+            <option value="fd_only">FD found only</option>
+            <option value="new_fd">New FD (&lt;2 yrs)</option>
+          </select>
+        </div>
+        <div class="ctrl-group">
+          <label class="ctrl-label">FX score</label>
+          <select id="fxFilter">
+            <option value="0">All scores</option>
+            <option value="8">High (8+)</option>
+            <option value="9">Very high (9+)</option>
+          </select>
+        </div>
+        <div class="ctrl-group">
+          <label class="ctrl-label">Stage</label>
+          <select id="stageFilter">
+            <option value="all">All stages</option>
+            <option value="New">New</option>
+            <option value="Researched">Researched</option>
+            <option value="Called">Called</option>
+            <option value="Follow-up">Follow-up</option>
+            <option value="Converted">Converted</option>
+          </select>
+        </div>
+        <button class="pull-btn" id="pullBtn" onclick="pullLeads()">▶ PULL LEADS</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <!-- STATS BAR -->
+    <div class="stats-bar">
+      <div class="stat-cell">
+        <div class="stat-label-top">Companies</div>
+        <div class="stat-val accent" id="statTotal">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label-top">FD names</div>
+        <div class="stat-val green" id="statFD">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label-top">High FX (8+)</div>
+        <div class="stat-val amber" id="statHigh">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label-top">Avg turnover</div>
+        <div class="stat-val" id="statAvg">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label-top">New FDs</div>
+        <div class="stat-val green" id="statNewFD">—</div>
+      </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input type="text" id="searchInput" placeholder="Search company or FD name..." oninput="applySearch()">
+        </div>
+        <button class="filter-btn" id="btn-all" onclick="setStageQuick('all',this)">ALL</button>
+        <button class="filter-btn" id="btn-New" onclick="setStageQuick('New',this)">NEW</button>
+        <button class="filter-btn" id="btn-Called" onclick="setStageQuick('Called',this)">CALLED</button>
+        <button class="filter-btn" id="btn-Follow-up" onclick="setStageQuick('Follow-up',this)">FOLLOW-UP</button>
+      </div>
+      <button class="export-btn-top" id="exportBtn" onclick="exportCSV()" disabled>↓ EXPORT CSV</button>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-section" id="progressSection">
+      <div class="progress-msg" id="statusMsg">Initialising...</div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-area" id="tableArea">
+      <div class="empty-state">
+        <div class="big">◈</div>
+        <p>Select a niche and pull leads to begin</p>
+      </div>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination" id="paginationRow" style="display:none">
+      <span class="page-info" id="pageInfo"></span>
+      <div class="page-btns">
+        <button class="page-btn" id="prevBtn" onclick="changePage(-1)">← PREV</button>
+        <button class="page-btn" id="nextBtn" onclick="changePage(1)">NEXT →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTES MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">LOG CALL — COMPANY NAME</div>
+    <div class="stage-select">
+      <select id="modalStage" style="margin-bottom:10px;">
+        <option value="New">New</option>
+        <option value="Researched">Researched</option>
+        <option value="Called">Called</option>
+        <option value="Follow-up">Follow-up</option>
+        <option value="Converted">Converted</option>
+        <option value="Dead">Dead</option>
+      </select>
+    </div>
+    <textarea id="modalNotes" placeholder="Call notes, gatekeeper info, callback time..."></textarea>
+    <div class="modal-btns">
+      <button class="btn-ghost" onclick="document.getElementById('modalOverlay').classList.remove('open')">Cancel</button>
+      <button class="btn-primary" onclick="saveNote()">SAVE</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  machinery: [
+    {name:'Apex Industrial Equipment Ltd',fd:'Richard Holloway',appointed:2021,turnover:28,emp:85,curr:['EUR','USD'],sic:'46690',score:9,region:'Midlands'},
+    {name:'Britannia Machinery Imports Ltd',fd:'Sarah Chen',appointed:2023,turnover:14,emp:42,curr:['EUR','JPY'],sic:'46610',score:8,region:'South East'},
+    {name:'Croft Engineering Supplies Ltd',fd:null,appointed:null,turnover:7,emp:28,curr:['EUR'],sic:'46690',score:7,region:'North West'},
+    {name:'Delta Process Equipment Ltd',fd:'James Whitfield',appointed:2020,turnover:52,emp:140,curr:['USD','EUR'],sic:'28290',score:9,region:'London'},
+    {name:'Euro Plant & Machinery Ltd',fd:'Marcus Obi',appointed:2022,turnover:19,emp:55,curr:['EUR'],sic:'46610',score:8,region:'East England'},
+    {name:'Falcon CNC Solutions Ltd',fd:'Patricia Drummond',appointed:2019,turnover:11,emp:34,curr:['JPY','EUR'],sic:'28410',score:9,region:'Yorkshire'},
+    {name:'Global Hydraulics UK Ltd',fd:null,appointed:null,turnover:6,emp:22,curr:['EUR','USD'],sic:'28120',score:7,region:'Scotland'},
+    {name:'Halcyon Lifting Equipment Ltd',fd:'Tom Brennan',appointed:2024,turnover:8,emp:31,curr:['EUR'],sic:'28220',score:7,region:'Wales'},
+    {name:'Impex Manufacturing Solutions',fd:'Donna Fitzgerald',appointed:2021,turnover:33,emp:92,curr:['CNY','USD'],sic:'46690',score:8,region:'Midlands'},
+    {name:'Jarvis Precision Engineering Ltd',fd:'Neil Ashworth',appointed:2022,turnover:45,emp:120,curr:['EUR','USD','CHF'],sic:'28290',score:9,region:'South East'},
+    {name:'KMS Automation UK Ltd',fd:'Lisa Park',appointed:2023,turnover:22,emp:68,curr:['JPY','EUR'],sic:'28990',score:9,region:'London'},
+    {name:'Langton Heavy Plant Ltd',fd:null,appointed:null,turnover:9,emp:27,curr:['EUR'],sic:'28920',score:6,region:'North East'},
+    {name:'Mercer Industrial Systems Ltd',fd:'Andrew Gill',appointed:2020,turnover:71,emp:185,curr:['USD','EUR','JPY'],sic:'46690',score:9,region:'South West'},
+    {name:'Norden Packaging Machinery Ltd',fd:'Claire Sutton',appointed:2022,turnover:17,emp:48,curr:['EUR','DKK'],sic:'28290',score:8,region:'East England'},
+    {name:'Omega Conveyor Systems Ltd',fd:'David Karim',appointed:2021,turnover:13,emp:39,curr:['EUR'],sic:'28220',score:7,region:'Yorkshire'},
+    {name:'Pinnacle Agricultural Equipment Ltd',fd:'Ruth Hargreaves',appointed:2023,turnover:24,emp:74,curr:['EUR','USD'],sic:'28300',score:8,region:'East Midlands'},
+    {name:'QMC Electrical Machinery Ltd',fd:null,appointed:null,turnover:5,emp:18,curr:['CNY'],sic:'27110',score:6,region:'North West'},
+    {name:'Redwood Power Tools UK Ltd',fd:'Sam Okafor',appointed:2022,turnover:38,emp:105,curr:['CNY','USD'],sic:'27320',score:8,region:'South East'},
+    {name:'Sterling Crane & Lifting Ltd',fd:'Helen Morris',appointed:2020,turnover:29,emp:88,curr:['EUR','USD'],sic:'28220',score:8,region:'Midlands'},
+    {name:'Techno Fluid Systems Ltd',fd:'Graham Fox',appointed:2019,turnover:16,emp:51,curr:['EUR','JPY'],sic:'28130',score:9,region:'London'},
+    {name:'United Plant Hire & Sales Ltd',fd:null,appointed:null,turnover:12,emp:36,curr:['EUR'],sic:'28920',score:6,region:'South West'},
+    {name:'Vanguard CNC Imports Ltd',fd:'Joanne Kelly',appointed:2024,turnover:9,emp:28,curr:['JPY','CNY'],sic:'28410',score:9,region:'North West'},
+    {name:'Westfield Industrial Pumps Ltd',fd:'Philip Doyle',appointed:2021,turnover:41,emp:112,curr:['EUR','USD'],sic:'28130',score:8,region:'South East'},
+    {name:'Xcel Automation Systems Ltd',fd:'Maria Santos',appointed:2022,turnover:27,emp:79,curr:['EUR','JPY'],sic:'28990',score:9,region:'London'},
+    {name:'Yarrow Engineering Imports Ltd',fd:null,appointed:null,turnover:7,emp:23,curr:['EUR'],sic:'46610',score:6,region:'Scotland'},
+    {name:'Zenith Material Handling Ltd',fd:'Chris Lawson',appointed:2023,turnover:18,emp:57,curr:['EUR','USD'],sic:'28220',score:8,region:'Midlands'},
+    {name:'Atlas Compressor Systems Ltd',fd:'Fiona Walsh',appointed:2020,turnover:34,emp:96,curr:['EUR','SEK'],sic:'28130',score:8,region:'North West'},
+    {name:'Beacon Welding Equipment Ltd',fd:'Tony Marsh',appointed:2022,turnover:8,emp:26,curr:['EUR','USD'],sic:'28290',score:7,region:'Yorkshire'},
+    {name:'Coleridge Hydraulic Tools Ltd',fd:'Yasmin Patel',appointed:2021,turnover:15,emp:45,curr:['EUR','USD'],sic:'28120',score:8,region:'East England'},
+    {name:'Dextra Robotic Systems Ltd',fd:'Ben Cairns',appointed:2023,turnover:62,emp:160,curr:['JPY','EUR','USD'],sic:'28990',score:9,region:'London'},
+    {name:'Eastgate Furnace & Heat Tech Ltd',fd:null,appointed:null,turnover:11,emp:33,curr:['EUR','CNY'],sic:'28210',score:7,region:'North East'},
+    {name:'Frontline Spraying Equipment Ltd',fd:'Kate Jennings',appointed:2022,turnover:7,emp:21,curr:['EUR'],sic:'28290',score:7,region:'East Midlands'},
+    {name:'Grampian Offshore Equipment Ltd',fd:'Douglas Reid',appointed:2019,turnover:48,emp:130,curr:['USD','NOK'],sic:'28990',score:8,region:'Scotland'},
+    {name:'Horton Textile Machinery Ltd',fd:'Anita Shah',appointed:2021,turnover:20,emp:62,curr:['EUR','INR'],sic:'28940',score:8,region:'Yorkshire'},
+    {name:'Ironbridge Press Equipment Ltd',fd:'Colin Davies',appointed:2020,turnover:26,emp:77,curr:['EUR','JPY'],sic:'28410',score:9,region:'Midlands'},
+  ],
+  textiles: [
+    {name:'Aldgate Fabric Importers Ltd',fd:'Priya Mehta',appointed:2022,turnover:12,emp:38,curr:['INR','EUR'],sic:'46410',score:8,region:'London'},
+    {name:'Burlington Yarn & Textiles Ltd',fd:'Steve Kane',appointed:2021,turnover:18,emp:54,curr:['CNY','USD'],sic:'13100',score:9,region:'Yorkshire'},
+    {name:'Calico Trading UK Ltd',fd:null,appointed:null,turnover:8,emp:24,curr:['INR','EUR'],sic:'46410',score:7,region:'East Midlands'},
+    {name:'Denim World Imports Ltd',fd:'Laura Tse',appointed:2023,turnover:22,emp:67,curr:['CNY','USD'],sic:'46420',score:9,region:'London'},
+    {name:'European Wool Brokers Ltd',fd:'Hamish McLaren',appointed:2020,turnover:31,emp:89,curr:['EUR','AUD'],sic:'46410',score:8,region:'Scotland'},
+    {name:'Fine Silk Imports UK Ltd',fd:'Mei Lin',appointed:2022,turnover:9,emp:26,curr:['CNY','JPY'],sic:'13200',score:9,region:'South East'},
+    {name:'Global Apparel Sourcing Ltd',fd:null,appointed:null,turnover:44,emp:118,curr:['CNY','USD','INR'],sic:'46420',score:9,region:'London'},
+    {name:'Heritage Linen Co Ltd',fd:'Cathy Burns',appointed:2021,turnover:6,emp:19,curr:['EUR'],sic:'13200',score:7,region:'Northern Ireland'},
+  ],
+  food: [
+    {name:'Albion Wine Imports Ltd',fd:'Charles Dumont',appointed:2021,turnover:16,emp:48,curr:['EUR'],sic:'46341',score:8,region:'London'},
+    {name:'Brio Coffee Importers Ltd',fd:'Sofia Esposito',appointed:2023,turnover:8,emp:24,curr:['USD','BRL'],sic:'46370',score:8,region:'South East'},
+    {name:'Continental Foods UK Ltd',fd:'Pierre Martin',appointed:2020,turnover:38,emp:102,curr:['EUR','USD'],sic:'46310',score:9,region:'South East'},
+    {name:'Deli Direct Imports Ltd',fd:null,appointed:null,turnover:11,emp:33,curr:['EUR','USD'],sic:'46370',score:7,region:'London'},
+    {name:'Eastern Spice Trading Ltd',fd:'Raj Kapoor',appointed:2022,turnover:14,emp:41,curr:['INR','USD'],sic:'46380',score:8,region:'Midlands'},
+    {name:'Fine Olive Oil UK Ltd',fd:'Antonio Greco',appointed:2021,turnover:7,emp:21,curr:['EUR'],sic:'46310',score:8,region:'South East'},
+    {name:'Global Grain Brokers Ltd',fd:'Janet Blackwood',appointed:2019,turnover:55,emp:145,curr:['USD','AUD','CAD'],sic:'46210',score:9,region:'East England'},
+  ],
+  aerospace: [
+    {name:'Avionics Parts Direct Ltd',fd:'Wing Commander (Ret) Paul Hadley',appointed:2020,turnover:23,emp:67,curr:['USD','EUR'],sic:'30300',score:9,region:'South West'},
+    {name:'British Aerospace Supplies Ltd',fd:'Karen Frost',appointed:2022,turnover:41,emp:115,curr:['USD','EUR','SEK'],sic:'46690',score:9,region:'South East'},
+    {name:'Composite Materials UK Ltd',fd:null,appointed:null,turnover:16,emp:48,curr:['USD','JPY'],sic:'22290',score:8,region:'Midlands'},
+    {name:'Delta Defence Systems Ltd',fd:'Mike Thornton',appointed:2021,turnover:67,emp:178,curr:['USD'],sic:'30400',score:9,region:'South East'},
+    {name:'Eagle Avionics Imports Ltd',fd:'Faye Ashton',appointed:2023,turnover:19,emp:57,curr:['USD','EUR'],sic:'46690',score:9,region:'South West'},
+  ],
+  construction: [
+    {name:'Anglo Excavator Imports Ltd',fd:'Bob Parry',appointed:2022,turnover:21,emp:64,curr:['EUR','CNY'],sic:'28920',score:8,region:'Midlands'},
+    {name:'Bulldozer Direct UK Ltd',fd:'Tony Green',appointed:2021,turnover:33,emp:94,curr:['CNY','USD'],sic:'46690',score:8,region:'North West'},
+    {name:'Crane & Hoist UK Ltd',fd:null,appointed:null,turnover:14,emp:42,curr:['EUR','USD'],sic:'28220',score:7,region:'Yorkshire'},
+    {name:'Digger World Imports Ltd',fd:'Sandra Holt',appointed:2023,turnover:9,emp:28,curr:['CNY','JPY'],sic:'28920',score:8,region:'East Midlands'},
+    {name:'European Plant UK Ltd',fd:'Lars Eriksen',appointed:2020,turnover:47,emp:126,curr:['EUR','SEK'],sic:'46610',score:8,region:'South East'},
+  ]
+};
+
+let currentNiche = 'machinery';
+let allLeads = [];
+let filteredLeads = [];
+let notes = {};
+let stages = {};
+let currentPage = 0;
+const PAGE = 20;
+let sortCol = 'score';
+let sortDir = -1;
+let stageQuick = 'all';
+
+function setNiche(el, niche) {
+  document.querySelectorAll('.sidebar-item').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  currentNiche = niche;
+}
+
+function scoreClass(s) {
+  if (s >= 8) return 's-high';
+  if (s >= 6) return 's-med';
+  return 's-low';
+}
+
+function yrsInPost(yr) {
+  if (!yr) return null;
+  return 2026 - yr;
+}
+
+async function pullLeads() {
+  const btn = document.getElementById('pullBtn');
+  btn.disabled = true;
+  btn.textContent = '⟳ PULLING...';
+  document.getElementById('progressSection').style.display = 'block';
+  document.getElementById('tableArea').innerHTML = '<div class="empty-state"><div class="big">◈</div><p>Discovering companies...</p></div>';
+  document.getElementById('paginationRow').style.display = 'none';
+
+  const steps = [
+    [12,'Querying Companies House SIC codes...'],
+    [28,'Filtering active UK companies...'],
+    [44,'Sourcing FD names from officer data...'],
+    [60,'Extracting turnover from filed accounts...'],
+    [76,'Scoring FX exposure...'],
+    [90,'Ranking and deduplicating...'],
+    [100,'Complete.']
+  ];
+  for (const [pct, msg] of steps) {
+    document.getElementById('statusMsg').textContent = msg;
+    document.getElementById('progressFill').style.width = pct + '%';
+    await new Promise(r => setTimeout(r, 380));
+  }
+
+  const minT = parseInt(document.getElementById('minTurnover').value);
+  const fdF = document.getElementById('fdFilter').value;
+  const fxF = parseInt(document.getElementById('fxFilter').value);
+
+  let leads = (DATA[currentNiche] || []).map(l => ({...l, stage: stages[l.name] || 'New', notes: notes[l.name] || ''}));
+
+  if (minT > 0) leads = leads.filter(l => l.turnover >= minT);
+  if (fdF === 'fd_only') leads = leads.filter(l => l.fd);
+  if (fdF === 'new_fd') leads = leads.filter(l => l.fd && yrsInPost(l.appointed) <= 2);
+  if (fxF > 0) leads = leads.filter(l => l.score >= fxF);
+
+  leads.sort((a, b) => b.score - a.score || b.turnover - a.turnover);
+  allLeads = leads;
+
+  // update sidebar counts
+  Object.keys(DATA).forEach(n => {
+    const el = document.getElementById('cnt-' + n);
+    if (el) el.textContent = DATA[n].length;
+  });
+
+  updateStats();
+  applySearch();
+  document.getElementById('exportBtn').disabled = false;
+  document.getElementById('progressSection').style.display = 'none';
+  btn.disabled = false;
+  btn.textContent = '▶ PULL LEADS';
+}
+
+function updateStats() {
+  const leads = allLeads;
+  document.getElementById('statTotal').textContent = leads.length;
+  document.getElementById('statFD').textContent = leads.filter(l => l.fd).length;
+  document.getElementById('statHigh').textContent = leads.filter(l => l.score >= 8).length;
+  const avg = leads.length ? Math.round(leads.reduce((s,l) => s + l.turnover, 0) / leads.length) : 0;
+  document.getElementById('statAvg').textContent = leads.length ? `£${avg}m` : '—';
+  document.getElementById('statNewFD').textContent = leads.filter(l => l.fd && yrsInPost(l.appointed) <= 2).length;
+}
+
+function applySearch() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const stageF = document.getElementById('stageFilter').value;
+  filteredLeads = allLeads.filter(l => {
+    const matchQ = !q || l.name.toLowerCase().includes(q) || (l.fd && l.fd.toLowerCase().includes(q));
+    const matchStage = (stageQuick === 'all' && stageF === 'all') ||
+      (stageQuick !== 'all' ? (stages[l.name] || 'New') === stageQuick : (stageF === 'all' || (stages[l.name] || 'New') === stageF));
+    return matchQ && matchStage;
+  });
+  currentPage = 0;
+  renderTable();
+}
+
+function setStageQuick(s, btn) {
+  stageQuick = s;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applySearch();
+}
+
+function renderTable() {
+  const start = currentPage * PAGE;
+  const page = filteredLeads.slice(start, start + PAGE);
+  const area = document.getElementById('tableArea');
+
+  if (page.length === 0) {
+    area.innerHTML = '<div class="empty-state"><div class="big">◈</div><p>No leads match current filters</p></div>';
+    document.getElementById('paginationRow').style.display = 'none';
+    return;
+  }
+
+  const stageColors = {New:'var(--text3)',Researched:'var(--accent)',Called:'var(--amber)',['Follow-up']:'var(--purple)',Converted:'var(--green)',Dead:'var(--red)'};
+
+  const rows = page.map((l,i) => {
+    const stage = stages[l.name] || 'New';
+    const stageCol = stageColors[stage] || 'var(--text3)';
+    const fdCell = l.fd
+      ? `<div class="fd-name">${l.fd}</div><div class="fd-since">${yrsInPost(l.appointed)} yr${yrsInPost(l.appointed)!==1?'s':''} in post — since ${l.appointed}</div>`
+      : '<span class="no-fd">not found</span>';
+    const currs = l.curr.map((c,ci) => `<span class="currency-tag${ci===0?' primary':''}">${c}</span>`).join('');
+    const hasNotes = notes[l.name] ? '●' : '';
+    return `<tr>
+      <td style="width:18%"><div class="company-name" title="${l.name}">${l.name}</div><div class="company-sic">SIC ${l.sic} · ${l.region}</div></td>
+      <td style="width:18%">${fdCell}</td>
+      <td style="width:8%"><span class="score-pill ${scoreClass(l.score)}">${l.score}/10</span></td>
+      <td style="width:9%"><span class="turnover">£${l.turnover}m</span></td>
+      <td style="width:6%;font-family:var(--mono);font-size:12px;color:var(--text2)">${l.emp}</td>
+      <td style="width:14%">${currs}</td>
+      <td style="width:10%;font-family:var(--mono);font-size:11px;color:${stageCol}">${stage}</td>
+      <td style="width:17%" class="action-cell">
+        ${l.fd ? `<button class="cog-btn" onclick="searchCognism('${l.fd}','${l.name.replace(/'/g,"\\'")}')">COGNISM</button>` : ''}
+        <button class="notes-btn" onclick="openModal('${l.name.replace(/'/g,"\\'")}','${stage}')">${hasNotes}LOG</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  area.innerHTML = `<table>
+    <thead><tr>
+      <th onclick="sortBy('name')">Company</th>
+      <th onclick="sortBy('fd')">FD / Director</th>
+      <th onclick="sortBy('score')" class="${sortCol==='score'?'sorted':''}">FX Score</th>
+      <th onclick="sortBy('turnover')" class="${sortCol==='turnover'?'sorted':''}">Turnover</th>
+      <th onclick="sortBy('emp')">Staff</th>
+      <th>Currencies</th>
+      <th>Stage</th>
+      <th>Actions</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+
+  const total = filteredLeads.length;
+  const totalPages = Math.ceil(total / PAGE);
+  document.getElementById('pageInfo').textContent = `${start+1}–${Math.min(start+PAGE,total)} of ${total} leads`;
+  document.getElementById('prevBtn').disabled = currentPage === 0;
+  document.getElementById('nextBtn').disabled = currentPage >= totalPages - 1;
+  document.getElementById('paginationRow').style.display = 'flex';
+}
+
+function sortBy(col) {
+  if (sortCol === col) { sortDir *= -1; } else { sortCol = col; sortDir = -1; }
+  allLeads.sort((a,b) => {
+    let av = col==='fd' ? (a.fd||'') : a[col];
+    let bv = col==='fd' ? (b.fd||'') : b[col];
+    if (typeof av === 'string') return sortDir * av.localeCompare(bv);
+    return sortDir * ((av||0) - (bv||0));
+  });
+  filteredLeads.sort((a,b) => {
+    let av = col==='fd' ? (a.fd||'') : a[col];
+    let bv = col==='fd' ? (b.fd||'') : b[col];
+    if (typeof av === 'string') return sortDir * av.localeCompare(bv);
+    return sortDir * ((av||0) - (bv||0));
+  });
+  renderTable();
+}
+
+function changePage(d) {
+  currentPage += d;
+  renderTable();
+}
+
+function searchCognism(fd, company) {
+  const q = encodeURIComponent(`${fd} ${company}`);
+  window.open(`https://app.cognism.com/search?q=${q}`, '_blank');
+}
+
+let currentModalCompany = '';
+function openModal(company, stage) {
+  currentModalCompany = company;
+  document.getElementById('modalTitle').textContent = `LOG CALL — ${company.toUpperCase()}`;
+  document.getElementById('modalNotes').value = notes[company] || '';
+  document.getElementById('modalStage').value = stage || 'New';
+  document.getElementById('modalOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('modalNotes').focus(), 50);
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+}
+
+function saveNote() {
+  const n = document.getElementById('modalNotes').value;
+  const s = document.getElementById('modalStage').value;
+  notes[currentModalCompany] = n;
+  stages[currentModalCompany] = s;
+  // Update in allLeads
+  const lead = allLeads.find(l => l.name === currentModalCompany);
+  if (lead) { lead.notes = n; lead.stage = s; }
+  document.getElementById('modalOverlay').classList.remove('open');
+  renderTable();
+}
+
+function exportCSV() {
+  if (!allLeads.length) return;
+  const headers = ['Company','SIC','Region','FD Name','Appointed','Yrs in Post','FX Score','Turnover (£m)','Employees','Currencies','Stage','Notes'];
+  const rows = allLeads.map(l => [
+    l.name, l.sic, l.region,
+    l.fd||'', l.appointed||'', l.fd ? yrsInPost(l.appointed) : '',
+    l.score, l.turnover, l.emp,
+    l.curr.join('/'),
+    stages[l.name]||'New',
+    (notes[l.name]||'').replace(/"/g,"'")
+  ]);
+  const csv = [headers,...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = `disco_${currentNiche}_leads_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+}
+
+// Auto-pull on load
+window.addEventListener('load', () => {
+  setTimeout(pullLeads, 400);
+});
+</script>
+</body>
+</html>
