@@ -1369,62 +1369,106 @@ function exportCSV(){
 }
 
 window.addEventListener('load', async () => {
-  await loadGithubEnrichment();
-  setTimeout(pullLeads, 300);
+  await loadRealLeads();
+  setTimeout(pullLeads, 100);
 });
 
 // ═══════════════════════════════════════════════════
-// GITHUB ACTIONS ENRICHMENT LOADER
-// Loads enrichment.json written by the nightly Action.
-// Merges into localStorage so all card rendering picks it up.
-// Falls back silently if file is missing or empty.
+// REAL LEADS LOADER
+// Tries to load leads.json written by the nightly GitHub Action.
+// leads.json contains real CH companies discovered by SIC code.
+// Falls back to LEADS_DB (seeded data) if file not present.
 // ═══════════════════════════════════════════════════
-async function loadGithubEnrichment() {
+let REAL_LEADS_LOADED = false;
+
+async function loadRealLeads() {
   try {
-    // Add cache-bust so GitHub Pages doesn't serve stale file
-    const r = await fetchWithTimeout('./enrichment.json?v=' + Date.now(), 8000);
-    if (!r.ok) return;
+    const r = await fetchWithTimeout('./leads.json?v=' + Date.now(), 8000);
+    if (!r.ok) { console.log('DISCO: leads.json not found — using seeded data'); return; }
     const data = await r.json();
-    const leads = data.leads || {};
-    let merged = 0;
-    for (const [id, enrData] of Object.entries(leads)) {
-      if (!enrData || enrData.status === 'FAILED') continue;
-      // Only merge if Action data is newer than what's stored
-      const existing = getEnrichment(id);
-      const existingTs = existing.updatedAt || existing.enrichedAt || '2000-01-01';
-      const newTs = enrData.enrichedAt || enrData.generatedAt || '2000-01-01';
-      if (newTs > existingTs || !existing.status || existing.status === 'NOT_ENRICHED') {
-        // Preserve user-entered data — never overwrite mobile, ddi, manualFD
-        const saved = getSavedLeadData(id);
-        setEnrichment(id, {
-          ...enrData,
-          // keep any user-pasted contact data
-          mobile: saved.mobile || undefined,
-          ddi: saved.ddi || undefined,
-          manualFD: saved.manualFD || undefined,
-          _source: 'GITHUB_ACTIONS',
-        });
-        merged++;
+    const leadsMap = data.leads || {};
+    if (!Object.keys(leadsMap).length) return;
+
+    // Group by niche and inject into LEADS_DB, replacing seeded data
+    const byNiche = {};
+    for (const lead of Object.values(leadsMap)) {
+      const niche = lead.niche || 'machinery';
+      if (!byNiche[niche]) byNiche[niche] = [];
+      // Normalise to LEADS_DB schema
+      byNiche[niche].push({
+        id: lead.id,
+        name: lead.name,
+        fd: lead.fd || null,
+        fdRole: lead.fdRole || null,
+        appointed: lead.appointed || null,
+        turnover: lead.turnover || 5,
+        growth: lead.growth || null,
+        emp: lead.emp || 0,
+        curr: lead.curr || ['EUR'],
+        sic: lead.sic || '',
+        sicDesc: lead.sicDesc || '',
+        region: lead.region || 'UK',
+        companyNumber: lead.companyNumber || '',
+        fxSignals: lead.fxSignals || [],
+        triggerEvents: lead.triggerEvents || [],
+        companySignals: lead.companySignals || [],
+        // Pre-merge enrichment so card renders immediately
+        _enriched: {
+          fd: lead.fd, fdRole: lead.fdRole, appointed: lead.appointed,
+          contactSource: lead.contactSource, fdEvidenceLevel: lead.fdEvidenceLevel,
+          officers: lead.officers || [], fxSignals: lead.fxSignals || [],
+          sources: lead.sources || [], status: lead.enrichStatus || 'PARTIAL',
+          enrichedAt: lead.enrichedAt, companyNumber: lead.companyNumber,
+        }
+      });
+    }
+
+    // Replace LEADS_DB niches that have real data
+    let totalLoaded = 0;
+    for (const [niche, leads] of Object.entries(byNiche)) {
+      if (leads.length > 0) {
+        LEADS_DB[niche] = leads;
+        totalLoaded += leads.length;
+        // Pre-populate enrichment in localStorage
+        for (const lead of leads) {
+          if (lead._enriched) {
+            const existing = getEnrichment(lead.id);
+            const existingTs = existing.enrichedAt || '2000-01-01';
+            const newTs = lead._enriched.enrichedAt || '2000-01-01';
+            if (newTs >= existingTs || !existing.status || existing.status === 'NOT_ENRICHED') {
+              const saved = getSavedLeadData(lead.id);
+              setEnrichment(lead.id, {
+                ...lead._enriched,
+                mobile: saved.mobile || undefined,
+                ddi: saved.ddi || undefined,
+                _source: 'GITHUB_ACTIONS',
+              });
+            }
+          }
+        }
       }
     }
-    if (merged > 0) {
-      console.log(`DISCO: loaded ${merged} enriched leads from GitHub Actions (${data.generatedAt || 'unknown date'})`);
-      updateEnrichmentBanner(data);
-    }
+
+    REAL_LEADS_LOADED = true;
+    const date = data.generatedAt ? new Date(data.generatedAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+    const fdCount = Object.values(leadsMap).filter(l => l.fd).length;
+    console.log(`DISCO: loaded ${totalLoaded} real CH leads (${fdCount} with FD) — ${date}`);
+    showRealLeadsBanner(totalLoaded, fdCount, date);
+
   } catch(e) {
-    // Silent fail — enrichment.json may not exist yet
+    console.log('DISCO: leads.json load failed, using seeds —', e.message);
   }
 }
 
-function updateEnrichmentBanner(data) {
-  if (!data.enriched && !data.partial) return;
+function showRealLeadsBanner(total, withFD, date) {
   const banner = document.createElement('div');
-  banner.style.cssText = 'position:fixed;bottom:60px;right:20px;background:var(--bg3);border:1px solid rgba(0,230,118,.3);color:var(--green);font-family:var(--mono);font-size:10px;padding:6px 12px;border-radius:4px;z-index:8000;letter-spacing:.05em;';
-  const date = data.generatedAt ? new Date(data.generatedAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) : '—';
-  banner.textContent = `◈ CH enrichment loaded — ${data.enriched||0} enriched · ${date}`;
+  banner.style.cssText = 'position:fixed;bottom:60px;right:20px;background:var(--bg3);border:1px solid rgba(0,212,255,.3);color:var(--accent);font-family:var(--mono);font-size:10px;padding:6px 12px;border-radius:4px;z-index:8000;letter-spacing:.05em;cursor:pointer;';
+  banner.textContent = `◈ ${total} real CH leads loaded · ${withFD} with FD · ${date}`;
+  banner.onclick = () => banner.remove();
   document.body.appendChild(banner);
-  setTimeout(() => banner.remove(), 5000);
+  setTimeout(() => { if (banner.parentNode) banner.remove(); }, 6000);
 }
+
 
 </script>
 </body>

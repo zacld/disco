@@ -1,0 +1,9 @@
+{
+  "generatedAt": "2026-06-09T00:00:00Z",
+  "source": "Companies House Advanced Search",
+  "totalLeads": 0,
+  "withFD": 0,
+  "niches": ["machinery","textiles","food","aerospace","construction"],
+  "note": "Run GitHub Action to populate with real Companies House data.",
+  "leads": {}
+}
