@@ -165,25 +165,130 @@ def find_best_finance_contact(officers):
         }
     return {}
 
-def estimate_turnover_band(company):
-    """Rough turnover estimate from accounts category + employee count."""
-    accounts = company.get('accounts', {})
-    category = accounts.get('last_accounts', {}).get('type', '')
-    emp = company.get('number_of_employees') or 0
+def get_filing_history(company_number):
+    """Get most recent annual filing reference."""
+    data = ch_get(f'/company/{company_number}/filing-history', {
+        'items_per_page': 10,
+        'category': 'accounts',
+    })
+    if not data:
+        return None
+    items = data.get('items', [])
+    # Find most recent full/medium/small accounts
+    preferred = ['AA', 'ACCOUNTS_WITH_ACCOUNTS_EXEMPTION_FILING', 'AA01']
+    for item in items:
+        if item.get('type') in preferred:
+            return item
+    return items[0] if items else None
 
-    # Category-based bands (Companies House account type)
+def parse_turnover_from_accounts(company_number, filing):
+    """
+    Fetch the XBRL/iXBRL filing document and extract turnover.
+    CH returns structured data via the document API for recent filings.
+    Falls back to accounts category band if not parseable.
+    """
+    if not filing:
+        return None, None
+
+    # Try to get structured data from the accounts filing metadata
+    # CH stores key financials in the filing description for some account types
+    description = filing.get('description', '')
+    desc_values = filing.get('description_values', {})
+
+    # Some filings include made_up_date — useful for recency check
+    made_up = filing.get('date', '') or desc_values.get('made_up_date', '')
+
+    # Try the document API to get XBRL data
+    links = filing.get('links', {})
+    doc_url = links.get('document_metadata', '')
+    if not doc_url:
+        return None, made_up
+
+    # Fetch document metadata
+    doc_path = doc_url.replace('https://api.company-information.service.gov.uk', '')
+    doc_data = ch_get(doc_path)
+    if not doc_data:
+        return None, made_up
+
+    # Look for XBRL resource with financial data
+    resources = doc_data.get('resources', {})
+    for content_type, resource in resources.items():
+        if 'xbrl' in content_type.lower() or 'xml' in content_type.lower():
+            # Try to fetch the actual XBRL document
+            xbrl_links = resource.get('links', {})
+            xbrl_url = xbrl_links.get('self', '')
+            if xbrl_url:
+                try:
+                    xbrl_path = xbrl_url.replace('https://api.company-information.service.gov.uk', '')
+                    # Download the XBRL content
+                    import re as _re
+                    r = S.get(f'{CH_BASE}{xbrl_path}', timeout=10, stream=True)
+                    if r.ok:
+                        content = r.text[:50000]  # first 50k chars only
+                        # Extract turnover from XBRL tags
+                        patterns = [
+                            r'<(?:uk-bus:|bus:|core:|xbrli:)?Turnover[^>]*>(\d+)</(?:uk-bus:|bus:|core:|xbrli:)?Turnover>',
+                            r'<(?:uk-bus:|bus:|core:)?Revenue[^>]*>(\d+)</(?:uk-bus:|bus:|core:)?Revenue>',
+                            r'TurnoverRevenue[^>]*>(\d+)<',
+                            r'Turnover.*?>(\d{4,})<',
+                        ]
+                        for pat in patterns:
+                            m = _re.search(pat, content, _re.IGNORECASE)
+                            if m:
+                                raw = int(m.group(1))
+                                # Convert to £m — CH stores in full pounds
+                                if raw > 1_000_000:
+                                    return round(raw / 1_000_000, 1), made_up
+                                elif raw > 1000:
+                                    return round(raw / 1000, 1), made_up
+                except Exception:
+                    pass
+    return None, made_up
+
+def get_real_turnover(company_number, company):
+    """
+    Try to get actual turnover from filed accounts.
+    Returns (turnover_in_millions, accounts_date, source_label)
+    Falls back to accounts-category band estimate.
+    """
+    # First try from advanced search company data (accounts category)
+    accounts = company.get('accounts', {})
+    last_accounts = accounts.get('last_accounts', {})
+    acct_type = (last_accounts.get('type') or '').lower()
+    acct_date = last_accounts.get('made_up_to') or last_accounts.get('period_end_on') or ''
+
+    # Band estimates by accounts type
     bands = {
-        'micro-entity': (0, 2),
-        'dormant': (0, 0),
-        'small': (2, 10),
-        'group': (20, 100),
-        'full': (10, 50),
-        'medium': (10, 50),
-        'large': (50, 250),
+        'micro-entity': 2,
+        'dormant': 0,
+        'small': 4,
+        'total exemption small': 4,
+        'total exemption full': 8,
+        'group': 40,
+        'full': 15,
+        'medium': 20,
+        'large': 75,
+        'audited abridged': 10,
+        'unaudited abridged': 5,
     }
-    low, high = bands.get(category.lower(), (5, 25))
-    mid = (low + high) // 2
-    return mid if mid > 0 else 5
+    band_estimate = bands.get(acct_type, 5)
+
+    # Try to get real figure from filing
+    time.sleep(0.2)
+    filing = get_filing_history(company_number)
+    time.sleep(0.2)
+    real_turnover, filing_date = parse_turnover_from_accounts(company_number, filing)
+
+    if real_turnover and real_turnover > 0:
+        date_label = filing_date or acct_date
+        print(f'    Turnover: £{real_turnover}m (from accounts {date_label})')
+        return real_turnover, date_label, 'CH_ACCOUNTS_VERIFIED'
+    else:
+        # Fall back to band estimate
+        date_label = acct_date
+        if band_estimate > 0:
+            print(f'    Turnover: ~£{band_estimate}m (est. from {acct_type or "unknown"} accounts type)')
+        return band_estimate, date_label, f'CH_ACCOUNTS_ESTIMATE_{acct_type.upper().replace(" ","_") or "UNKNOWN"}'
 
 def make_fx_signals(niche_key, company):
     niche = NICHES[niche_key]
@@ -200,7 +305,7 @@ def make_fx_signals(niche_key, company):
         'retrievedAt': NOW,
     }]
 
-def build_lead(company, niche_key, officers):
+def build_lead(company, niche_key, officers, turnover_data=None):
     cn = company.get('company_number', '')
     name = company.get('company_name', '') or company.get('title', '')
     sic_codes = company.get('sic_codes', [])
@@ -220,18 +325,38 @@ def build_lead(company, niche_key, officers):
         'appointed': o.get('appointed_on', ''),
     } for o in officers[:8]]
 
-    turnover = estimate_turnover_band(company)
+    # Use real turnover if provided, else fall back to band estimate
+    if turnover_data:
+        turnover, acct_date, turnover_source = turnover_data
+    else:
+        turnover, acct_date, turnover_source = get_real_turnover(cn, company)
+
+    # Add turnover source signal if we got a real figure
+    turnover_signal = []
+    if turnover_source == 'CH_ACCOUNTS_VERIFIED':
+        turnover_signal = [{
+            'label': f'Turnover confirmed: £{turnover}m',
+            'value': f'£{turnover}m',
+            'ev': 'VERIFIED',
+            'conf': 0.95,
+            'reason': f'Extracted from filed accounts ({acct_date})',
+            'sourceName': 'Companies House filed accounts',
+            'sourceUrl': f'https://find-and-update.company-information.service.gov.uk/company/{cn}/filing-history',
+            'retrievedAt': NOW,
+        }]
 
     lead = {
         'id': f'{niche_key[:1]}_ch_{cn}',
         'name': name.title(),
         'companyNumber': cn,
         'sic': primary_sic,
-        'sicDesc': '',  # populated by DISCO from SIC map
+        'sicDesc': '',
         'region': region.title(),
         'niche': niche_key,
         'curr': niche['likely_currencies'][:2],
-        'turnover': turnover,
+        'turnover': turnover if turnover else 5,
+        'turnoverSource': turnover_source,
+        'accountsDate': acct_date,
         'growth': None,
         'emp': company.get('number_of_employees') or 0,
         'companyStatus': company.get('company_status', ''),
@@ -244,7 +369,7 @@ def build_lead(company, niche_key, officers):
         'contactConfidence': contact.get('contactConfidence') or 0,
         'fdEvidenceLevel': contact.get('fdEvidenceLevel') or 'INFERRED',
         'officers': officer_list,
-        'fxSignals': make_fx_signals(niche_key, company),
+        'fxSignals': make_fx_signals(niche_key, company) + turnover_signal,
         'triggerEvents': [],
         'companySignals': [],
         'sources': [{
@@ -270,9 +395,10 @@ def discover_and_enrich():
         seen_companies = set()
 
         sic_codes = niche['sic_codes']
-        # Limit per niche — pull from top SIC codes only to stay within rate limits
-        target_per_niche = 30
-        per_sic = max(3, target_per_niche // min(len(sic_codes), 8))
+        # 20 per niche — 4 API calls per company (search, officers, filing, accounts)
+        # keeps total under CH free tier rate limits
+        target_per_niche = 20
+        per_sic = max(3, target_per_niche // min(len(sic_codes), 6))
 
         for sic in sic_codes[:8]:  # top 8 SIC codes per niche
             if len(niche_leads) >= target_per_niche:
@@ -293,7 +419,10 @@ def discover_and_enrich():
                 officers = get_officers(cn)
                 time.sleep(0.3)
 
-                lead = build_lead(company, niche_key, officers)
+                # Get real turnover from filed accounts
+                turnover_data = get_real_turnover(cn, company)
+
+                lead = build_lead(company, niche_key, officers, turnover_data)
                 niche_leads[lead['id']] = lead
                 stats['found'] += 1
 
