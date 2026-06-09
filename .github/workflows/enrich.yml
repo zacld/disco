@@ -28,14 +28,14 @@ jobs:
           CH_API_KEY: ${{ secrets.CH_API_KEY }}
         run: python scripts/enrich_leads.py
 
-      - name: Commit enrichment.json if changed
+      - name: Commit leads.json and enrichment.json if changed
         run: |
           git config user.name  "DISCO Enrichment Bot"
           git config user.email "disco-bot@users.noreply.github.com"
-          git add enrichment.json
+          git add leads.json enrichment.json
           if git diff --staged --quiet; then
-            echo "No changes to enrichment.json — skipping commit"
+            echo "No changes — skipping commit"
           else
-            git commit -m "chore: update enrichment data [skip ci]"
+            git commit -m "chore: update leads and enrichment data [skip ci]"
             git push
           fi
