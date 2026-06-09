@@ -8,617 +8,265 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #0a0c0f;
-  --bg2: #111418;
-  --bg3: #181c22;
-  --bg4: #1e2430;
-  --border: rgba(255,255,255,0.07);
-  --border2: rgba(255,255,255,0.12);
-  --text: #e8eaf0;
-  --text2: #8b92a0;
-  --text3: #555d6b;
-  --accent: #00d4ff;
-  --accent2: #0099cc;
-  --green: #00e676;
-  --green2: #00c853;
-  --amber: #ffab40;
-  --red: #ff5252;
-  --purple: #b388ff;
-  --mono: 'IBM Plex Mono', monospace;
-  --sans: 'IBM Plex Sans', sans-serif;
+:root{
+  --bg:#0a0c0f;--bg2:#111418;--bg3:#181c22;--bg4:#1e2430;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --text:#e8eaf0;--text2:#8b92a0;--text3:#555d6b;
+  --accent:#00d4ff;--accent2:#0099cc;
+  --green:#00e676;--amber:#ffab40;--red:#ff5252;--purple:#b388ff;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; }
-body { min-height: 100vh; }
-
-/* SCANLINE OVERLAY */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
-  pointer-events: none;
-  z-index: 1000;
-}
-
-/* TOP BAR */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
-  height: 48px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg2);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-.logo {
-  font-family: var(--mono);
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--accent);
-  letter-spacing: 0.1em;
-}
-.logo span { color: var(--text3); font-weight: 400; }
-.topbar-right { display: flex; align-items: center; gap: 16px; }
-.status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-.version { font-family: var(--mono); font-size: 11px; color: var(--text3); }
-
-/* MAIN LAYOUT */
-.main { display: grid; grid-template-columns: 260px 1fr; height: calc(100vh - 48px); }
-
-/* SIDEBAR */
-.sidebar {
-  background: var(--bg2);
-  border-right: 1px solid var(--border);
-  overflow-y: auto;
-  padding: 20px 0;
-}
-.sidebar-section { margin-bottom: 24px; }
-.sidebar-label {
-  font-family: var(--mono);
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text3);
-  letter-spacing: 0.12em;
-  padding: 0 16px;
-  margin-bottom: 8px;
-  text-transform: uppercase;
-}
-.sidebar-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 16px;
-  cursor: pointer;
-  transition: background 0.15s;
-  border-left: 2px solid transparent;
-}
-.sidebar-item:hover { background: var(--bg3); }
-.sidebar-item.active { background: rgba(0,212,255,0.06); border-left-color: var(--accent); }
-.sidebar-item-name { font-size: 13px; color: var(--text); }
-.sidebar-item.active .sidebar-item-name { color: var(--accent); }
-.sidebar-count {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text3);
-  background: var(--bg3);
-  padding: 1px 7px;
-  border-radius: 10px;
-}
-
-.control-panel { padding: 16px; }
-.ctrl-group { margin-bottom: 14px; }
-.ctrl-label {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--text3);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-  display: block;
-}
-select, input[type=text] {
-  width: 100%;
-  background: var(--bg3);
-  border: 1px solid var(--border2);
-  color: var(--text);
-  font-family: var(--sans);
-  font-size: 12px;
-  padding: 7px 10px;
-  border-radius: 4px;
-  appearance: none;
-  outline: none;
-  transition: border-color 0.15s;
-}
-select:focus, input:focus { border-color: var(--accent); }
-option { background: var(--bg3); }
-
-.pull-btn {
-  width: 100%;
-  background: var(--accent);
-  color: var(--bg);
-  border: none;
-  font-family: var(--mono);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  padding: 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.15s;
-  margin-top: 8px;
-  text-transform: uppercase;
-}
-.pull-btn:hover { background: #33ddff; }
-.pull-btn:disabled { background: var(--bg4); color: var(--text3); cursor: not-allowed; }
-
-/* CONTENT AREA */
-.content { overflow-y: auto; display: flex; flex-direction: column; }
-
-/* STATS BAR */
-.stats-bar {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  border-bottom: 1px solid var(--border);
-  background: var(--bg2);
-  flex-shrink: 0;
-}
-.stat-cell {
-  padding: 14px 20px;
-  border-right: 1px solid var(--border);
-}
-.stat-cell:last-child { border-right: none; }
-.stat-label-top {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--text3);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-}
-.stat-val {
-  font-family: var(--mono);
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--text);
-}
-.stat-val.green { color: var(--green); }
-.stat-val.amber { color: var(--amber); }
-.stat-val.accent { color: var(--accent); }
-
-/* TOOLBAR */
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 20px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg2);
-  gap: 12px;
-  flex-shrink: 0;
-}
-.toolbar-left { display: flex; align-items: center; gap: 10px; }
-.search-wrap { position: relative; }
-.search-wrap input {
-  width: 240px;
-  padding-left: 28px;
-  font-size: 12px;
-}
-.search-icon {
-  position: absolute;
-  left: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text3);
-  font-size: 12px;
-  pointer-events: none;
-}
-.filter-btn {
-  background: var(--bg3);
-  border: 1px solid var(--border2);
-  color: var(--text2);
-  font-family: var(--mono);
-  font-size: 11px;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.15s;
-  letter-spacing: 0.05em;
-}
-.filter-btn:hover, .filter-btn.active { border-color: var(--accent); color: var(--accent); }
-.export-btn-top {
-  background: transparent;
-  border: 1px solid var(--border2);
-  color: var(--text2);
-  font-family: var(--mono);
-  font-size: 11px;
-  padding: 6px 14px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.15s;
-  letter-spacing: 0.05em;
-}
-.export-btn-top:hover { border-color: var(--green); color: var(--green); }
-.export-btn-top:disabled { opacity: 0.3; cursor: not-allowed; }
-
-/* PROGRESS */
-.progress-section {
-  padding: 20px;
-  display: none;
-}
-.progress-msg {
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--accent);
-  margin-bottom: 10px;
-}
-.progress-msg::before { content: '> '; color: var(--text3); }
-.progress-track {
-  height: 2px;
-  background: var(--bg4);
-  border-radius: 1px;
-  overflow: hidden;
-}
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent2), var(--accent));
-  border-radius: 1px;
-  transition: width 0.3s ease;
-  box-shadow: 0 0 8px var(--accent);
-}
-
-/* TABLE */
-.table-area { flex: 1; overflow-y: auto; }
-table { width: 100%; border-collapse: collapse; }
-thead { position: sticky; top: 0; z-index: 10; }
-th {
-  background: var(--bg3);
-  padding: 9px 16px;
-  text-align: left;
-  font-family: var(--mono);
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text3);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-  cursor: pointer;
-  user-select: none;
-}
-th:hover { color: var(--text2); }
-th.sorted { color: var(--accent); }
-td {
-  padding: 11px 16px;
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
-  max-width: 0;
-}
-tr:hover td { background: rgba(255,255,255,0.02); }
-.company-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 200px;
-}
-.company-sic {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--text3);
-  margin-top: 2px;
-}
-.fd-name { font-size: 13px; color: var(--accent); font-weight: 500; }
-.fd-since { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-top: 2px; }
-.no-fd { font-size: 12px; color: var(--text3); font-style: italic; }
-.score-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 3px;
-}
-.s-high { background: rgba(0,230,118,0.1); color: var(--green); border: 1px solid rgba(0,230,118,0.2); }
-.s-med { background: rgba(255,171,64,0.1); color: var(--amber); border: 1px solid rgba(255,171,64,0.2); }
-.s-low { background: rgba(255,82,82,0.1); color: var(--red); border: 1px solid rgba(255,82,82,0.2); }
-.turnover { font-family: var(--mono); font-size: 13px; color: var(--text); }
-.currency-tag {
-  display: inline-block;
-  font-family: var(--mono);
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 3px;
-  border: 1px solid var(--border2);
-  color: var(--text2);
-  margin-right: 3px;
-  margin-bottom: 2px;
-}
-.currency-tag.primary { border-color: rgba(0,212,255,0.3); color: var(--accent); }
-.action-cell { white-space: nowrap; }
-.cog-btn {
-  background: transparent;
-  border: 1px solid var(--border2);
-  color: var(--text2);
-  font-family: var(--mono);
-  font-size: 10px;
-  padding: 5px 10px;
-  border-radius: 3px;
-  cursor: pointer;
-  letter-spacing: 0.05em;
-  transition: all 0.15s;
-  margin-right: 4px;
-}
-.cog-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.05); }
-.notes-btn {
-  background: transparent;
-  border: 1px solid var(--border2);
-  color: var(--text3);
-  font-family: var(--mono);
-  font-size: 10px;
-  padding: 5px 8px;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.notes-btn:hover { border-color: var(--purple); color: var(--purple); }
-
-/* EMPTY STATE */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 300px;
-  color: var(--text3);
-  gap: 12px;
-}
-.empty-state .big { font-family: var(--mono); font-size: 40px; opacity: 0.2; }
-.empty-state p { font-size: 13px; }
-
-/* PAGINATION */
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
-  border-top: 1px solid var(--border);
-  background: var(--bg2);
-  flex-shrink: 0;
-}
-.page-info { font-family: var(--mono); font-size: 11px; color: var(--text3); }
-.page-btns { display: flex; gap: 6px; }
-.page-btn {
-  background: var(--bg3);
-  border: 1px solid var(--border2);
-  color: var(--text2);
-  font-family: var(--mono);
-  font-size: 11px;
-  padding: 5px 14px;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.page-btn:hover { border-color: var(--accent); color: var(--accent); }
-.page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-/* MODAL */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  z-index: 200;
-  display: none;
-  align-items: center;
-  justify-content: center;
-}
-.modal-overlay.open { display: flex; }
-.modal {
-  background: var(--bg2);
-  border: 1px solid var(--border2);
-  border-radius: 6px;
-  width: 480px;
-  max-width: 95vw;
-  padding: 24px;
-}
-.modal-title { font-family: var(--mono); font-size: 13px; color: var(--accent); margin-bottom: 16px; letter-spacing: 0.05em; }
-.modal textarea {
-  width: 100%;
-  height: 100px;
-  background: var(--bg3);
-  border: 1px solid var(--border2);
-  color: var(--text);
-  font-family: var(--sans);
-  font-size: 13px;
-  padding: 10px;
-  border-radius: 4px;
-  resize: none;
-  outline: none;
-}
-.modal textarea:focus { border-color: var(--accent); }
-.modal-btns { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
-.btn-primary {
-  background: var(--accent);
-  color: var(--bg);
-  border: none;
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 7px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  letter-spacing: 0.06em;
-}
-.btn-ghost {
-  background: transparent;
-  border: 1px solid var(--border2);
-  color: var(--text2);
-  font-family: var(--mono);
-  font-size: 11px;
-  padding: 7px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.stage-select {
-  margin-top: 10px;
-}
-
-/* RESPONSIVE */
-@media (max-width: 900px) {
-  .main { grid-template-columns: 1fr; }
-  .sidebar { display: none; }
-  .stats-bar { grid-template-columns: repeat(3,1fr); }
-}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;}
+body{min-height:100vh;overflow:hidden;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px);pointer-events:none;z-index:9999;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:48px;border-bottom:1px solid var(--border);background:var(--bg2);position:relative;z-index:200;}
+.logo{font-family:var(--mono);font-size:15px;font-weight:600;color:var(--accent);letter-spacing:.1em;}
+.logo span{color:var(--text3);font-weight:400;}
+.topbar-right{display:flex;align-items:center;gap:16px;}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.version{font-family:var(--mono);font-size:11px;color:var(--text3);}
+.app-wrap{display:flex;height:calc(100vh - 48px);}
+.sidebar{width:240px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;}
+.list-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.card-panel{width:540px;flex-shrink:0;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease;overflow:hidden;}
+.card-panel.open{transform:translateX(0);}
+.sidebar-section{margin-bottom:20px;padding-top:16px;}
+.sidebar-label{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.12em;padding:0 14px;margin-bottom:6px;text-transform:uppercase;}
+.sidebar-item{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;cursor:pointer;transition:background .12s;border-left:2px solid transparent;}
+.sidebar-item:hover{background:var(--bg3);}
+.sidebar-item.active{background:rgba(0,212,255,.06);border-left-color:var(--accent);}
+.sidebar-item-name{font-size:12px;color:var(--text2);}
+.sidebar-item.active .sidebar-item-name{color:var(--accent);}
+.sidebar-count{font-family:var(--mono);font-size:10px;color:var(--text3);background:var(--bg3);padding:1px 6px;border-radius:8px;}
+.ctrl-panel{padding:12px 14px;}
+.ctrl-group{margin-bottom:10px;}
+.ctrl-label{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;display:block;}
+select,input[type=text],input[type=date]{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--sans);font-size:12px;padding:6px 8px;border-radius:3px;appearance:none;outline:none;transition:border-color .15s;}
+select:focus,input:focus{border-color:var(--accent);}
+option{background:var(--bg3);}
+.pull-btn{width:100%;background:var(--accent);color:var(--bg);border:none;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.08em;padding:9px;border-radius:3px;cursor:pointer;transition:all .15s;margin-top:6px;text-transform:uppercase;}
+.pull-btn:hover{background:#33ddff;}
+.pull-btn:disabled{background:var(--bg4);color:var(--text3);cursor:not-allowed;}
+.stats-bar{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
+.stat-cell{padding:10px 16px;border-right:1px solid var(--border);}
+.stat-cell:last-child{border-right:none;}
+.stat-lbl{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px;}
+.stat-val{font-family:var(--mono);font-size:20px;font-weight:600;color:var(--text);}
+.stat-val.green{color:var(--green);}.stat-val.amber{color:var(--amber);}.stat-val.accent{color:var(--accent);}
+.toolbar{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--border);background:var(--bg2);gap:10px;flex-shrink:0;}
+.toolbar-left{display:flex;align-items:center;gap:8px;}
+.search-wrap{position:relative;}
+.search-wrap input{width:200px;padding-left:24px;font-size:12px;}
+.search-icon{position:absolute;left:7px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:11px;pointer-events:none;}
+.filter-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:var(--mono);font-size:10px;padding:5px 10px;border-radius:3px;cursor:pointer;transition:all .15s;letter-spacing:.05em;}
+.filter-btn:hover,.filter-btn.active{border-color:var(--accent);color:var(--accent);}
+.export-btn{background:transparent;border:1px solid var(--border2);color:var(--text2);font-family:var(--mono);font-size:10px;padding:5px 12px;border-radius:3px;cursor:pointer;transition:all .15s;}
+.export-btn:hover{border-color:var(--green);color:var(--green);}
+.export-btn:disabled{opacity:.3;cursor:not-allowed;}
+.progress-section{padding:16px;display:none;}
+.progress-msg{font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:8px;}
+.progress-msg::before{content:'> ';color:var(--text3);}
+.progress-track{height:2px;background:var(--bg4);border-radius:1px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:1px;transition:width .3s ease;box-shadow:0 0 6px var(--accent);}
+.table-area{flex:1;overflow-y:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead{position:sticky;top:0;z-index:10;}
+th{background:var(--bg3);padding:8px 12px;text-align:left;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;}
+th:hover{color:var(--text2);}th.sorted{color:var(--accent);}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr{cursor:pointer;}tr:hover td{background:rgba(255,255,255,.015);}tr.selected td{background:rgba(0,212,255,.05);}
+.company-name{font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;}
+.company-sub{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px;}
+.fd-name{font-size:12px;color:var(--accent);font-weight:500;}
+.fd-since{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px;}
+.no-fd{font-size:11px;color:var(--text3);font-style:italic;}
+.score-pill{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:11px;font-weight:600;padding:2px 7px;border-radius:3px;}
+.s-high{background:rgba(0,230,118,.1);color:var(--green);border:1px solid rgba(0,230,118,.2);}
+.s-med{background:rgba(255,171,64,.1);color:var(--amber);border:1px solid rgba(255,171,64,.2);}
+.s-low{background:rgba(255,82,82,.1);color:var(--red);border:1px solid rgba(255,82,82,.2);}
+.tier-badge{font-family:var(--mono);font-size:9px;font-weight:600;padding:2px 6px;border-radius:2px;letter-spacing:.08em;text-transform:uppercase;}
+.tier-DIAL_IMMEDIATELY{background:rgba(0,230,118,.15);color:var(--green);border:1px solid rgba(0,230,118,.3);}
+.tier-HIGH_PRIORITY{background:rgba(255,171,64,.15);color:var(--amber);border:1px solid rgba(255,171,64,.3);}
+.tier-STANDARD{background:rgba(0,212,255,.1);color:var(--accent);border:1px solid rgba(0,212,255,.2);}
+.tier-RESEARCH_WHEN_QUEUE_THIN{background:rgba(255,255,255,.04);color:var(--text3);border:1px solid var(--border2);}
+.tier-ARCHIVE{background:rgba(255,82,82,.08);color:var(--red);border:1px solid rgba(255,82,82,.15);}
+.currency-tag{display:inline-block;font-family:var(--mono);font-size:10px;padding:1px 5px;border-radius:2px;border:1px solid var(--border2);color:var(--text2);margin-right:2px;}
+.currency-tag.primary{border-color:rgba(0,212,255,.3);color:var(--accent);}
+.ev-badge{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:600;padding:1px 5px;border-radius:2px;letter-spacing:.05em;text-transform:uppercase;vertical-align:middle;}
+.ev-VERIFIED{background:rgba(0,230,118,.12);color:var(--green);border:1px solid rgba(0,230,118,.25);}
+.ev-STRONG_SIGNAL{background:rgba(255,171,64,.12);color:var(--amber);border:1px solid rgba(255,171,64,.25);}
+.ev-INFERRED{background:rgba(179,136,255,.1);color:var(--purple);border:1px solid rgba(179,136,255,.2);}
+/* enrichment status badges */
+.enrich-badge{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:600;padding:1px 6px;border-radius:2px;letter-spacing:.06em;text-transform:uppercase;vertical-align:middle;margin-left:6px;}
+.enrich-NOT_ENRICHED{background:rgba(255,255,255,.04);color:var(--text3);border:1px solid var(--border);}
+.enrich-ENRICHING{background:rgba(0,212,255,.1);color:var(--accent);border:1px solid rgba(0,212,255,.3);}
+.enrich-ENRICHED{background:rgba(0,230,118,.1);color:var(--green);border:1px solid rgba(0,230,118,.25);}
+.enrich-PARTIAL{background:rgba(255,171,64,.1);color:var(--amber);border:1px solid rgba(255,171,64,.25);}
+.enrich-FAILED{background:rgba(255,82,82,.08);color:var(--red);border:1px solid rgba(255,82,82,.2);}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:240px;color:var(--text3);gap:10px;}
+.empty-state .big{font-family:var(--mono);font-size:36px;opacity:.15;}
+.empty-state p{font-size:12px;}
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
+.page-info{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.page-btns{display:flex;gap:5px;}
+.page-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:var(--mono);font-size:10px;padding:4px 12px;border-radius:3px;cursor:pointer;transition:all .15s;}
+.page-btn:hover{border-color:var(--accent);color:var(--accent);}
+.page-btn:disabled{opacity:.3;cursor:not-allowed;}
+/* CARD */
+.card-header{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg3);flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between;}
+.card-company-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.card-score-row{display:flex;align-items:center;gap:8px;margin-top:3px;}
+.card-score-num{font-family:var(--mono);font-size:20px;font-weight:600;color:var(--accent);}
+.card-score-label{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.card-close{background:transparent;border:1px solid var(--border2);color:var(--text3);font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:3px;cursor:pointer;flex-shrink:0;}
+.card-close:hover{border-color:var(--red);color:var(--red);}
+.card-body{flex:1;overflow-y:auto;}
+.card-section{border-bottom:1px solid var(--border);}
+.card-section-hdr{padding:10px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;background:var(--bg2);font-family:var(--mono);font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;transition:background .12s;}
+.card-section-hdr:hover{background:var(--bg3);}
+.card-section-hdr .chevron{font-size:10px;transition:transform .15s;}
+.card-section-hdr.collapsed .chevron{transform:rotate(-90deg);}
+.card-section-body{padding:14px 16px;background:var(--bg);}
+.card-section-body.hidden{display:none;}
+.opening-block{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:14px;margin-bottom:10px;}
+.opening-label{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;}
+.opening-text{font-size:13px;color:var(--text);line-height:1.6;font-style:italic;}
+.opening-edit{width:100%;background:var(--bg4);border:1px solid var(--accent);color:var(--text);font-family:var(--sans);font-size:13px;padding:8px 10px;border-radius:3px;outline:none;resize:vertical;min-height:80px;line-height:1.6;display:none;}
+.backup-text{font-size:12px;color:var(--text2);line-height:1.5;margin-top:8px;}
+.signal-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;}
+.signal-row:last-child{margin-bottom:0;}
+.signal-text{flex:1;color:var(--text2);line-height:1.45;font-size:12px;}
+.signal-reason{font-size:11px;color:var(--text3);margin-top:2px;}
+.signal-source{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px;}
+.contact-block{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:12px;margin-bottom:10px;}
+.contact-name{font-size:14px;font-weight:600;color:var(--accent);margin-bottom:2px;}
+.contact-role{font-size:11px;color:var(--text2);margin-bottom:6px;}
+.contact-meta{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.contact-field{display:flex;align-items:center;gap:6px;margin-top:6px;}
+.contact-field input{flex:1;background:var(--bg4);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:11px;padding:5px 8px;border-radius:3px;outline:none;}
+.contact-field input:focus{border-color:var(--accent);}
+.contact-field input::placeholder{color:var(--text3);}
+.paste-btn{background:transparent;border:1px solid var(--border2);color:var(--text3);font-family:var(--mono);font-size:10px;padding:4px 8px;border-radius:3px;cursor:pointer;white-space:nowrap;transition:all .12s;}
+.paste-btn:hover{border-color:var(--accent);color:var(--accent);}
+.action-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.act-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:var(--mono);font-size:10px;padding:6px 10px;border-radius:3px;cursor:pointer;transition:all .15s;letter-spacing:.04em;white-space:nowrap;}
+.act-btn:hover{border-color:var(--accent);color:var(--accent);}
+.act-btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:600;}
+.act-btn.primary:hover{background:#33ddff;}
+.act-btn.green{border-color:rgba(0,230,118,.3);color:var(--green);}
+.act-btn.green:hover{background:rgba(0,230,118,.08);}
+.act-btn.amber{border-color:rgba(255,171,64,.3);color:var(--amber);}
+.act-btn.amber:hover{background:rgba(255,171,64,.08);}
+.act-btn.enrich{background:rgba(0,212,255,.07);border-color:rgba(0,212,255,.3);color:var(--accent);font-weight:600;}
+.act-btn.enrich:hover{background:rgba(0,212,255,.15);}
+.act-btn.enrich:disabled{opacity:.4;cursor:not-allowed;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.info-cell{background:var(--bg3);border-radius:3px;padding:8px 10px;}
+.info-cell-label{font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.08em;}
+.info-cell-val{font-size:13px;color:var(--text);font-weight:500;}
+.why-block{background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.15);border-radius:4px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--text2);line-height:1.5;}
+.why-block strong{color:var(--accent);}
+.risk-block{background:rgba(255,171,64,.05);border:1px solid rgba(255,171,64,.2);border-radius:4px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:var(--amber);}
+.enrich-progress{background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.15);border-radius:4px;padding:10px 12px;margin-bottom:10px;font-family:var(--mono);font-size:11px;color:var(--accent);}
+.enrich-progress .step{color:var(--text3);margin-top:3px;}
+.enrich-progress .step.done{color:var(--green);}
+.enrich-progress .step.active{color:var(--accent);}
+.enrich-progress .step.failed{color:var(--red);}
+/* manual import */
+.manual-import-area{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:12px;margin-top:8px;}
+.manual-import-area textarea{width:100%;background:var(--bg4);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:11px;padding:8px;border-radius:3px;outline:none;resize:vertical;min-height:100px;line-height:1.5;}
+.manual-import-area textarea:focus{border-color:var(--accent);}
+.json-error{color:var(--red);font-family:var(--mono);font-size:11px;margin-top:6px;}
+.json-preview{background:var(--bg4);border:1px solid rgba(0,230,118,.2);border-radius:3px;padding:8px;margin-top:8px;font-family:var(--mono);font-size:10px;color:var(--green);max-height:120px;overflow-y:auto;}
+/* sources panel */
+.source-item{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
+.source-item:last-child{border-bottom:none;}
+.source-label{flex:1;font-size:11px;color:var(--text2);}
+.source-url{font-family:var(--mono);font-size:10px;color:var(--accent);text-decoration:none;}
+.source-url:hover{text-decoration:underline;}
+.source-date{font-family:var(--mono);font-size:10px;color:var(--text3);}
+/* log form */
+.log-form{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.log-form .full{grid-column:1/-1;}
+.log-form select,.log-form textarea,.log-form input[type=date],.log-form input[type=text]{width:100%;}
+.log-form textarea{background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--sans);font-size:12px;padding:6px 8px;border-radius:3px;outline:none;resize:vertical;min-height:60px;}
+.log-form textarea:focus{border-color:var(--accent);}
+.log-submit{width:100%;background:var(--green);color:var(--bg);border:none;font-family:var(--mono);font-size:11px;font-weight:600;padding:9px;border-radius:3px;cursor:pointer;margin-top:8px;letter-spacing:.06em;transition:all .15s;}
+.log-submit:hover{background:#33ff88;}
+.call-hist-item{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:10px 12px;margin-bottom:6px;}
+.call-hist-meta{font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:4px;}
+.call-hist-outcome{font-size:12px;color:var(--text);font-weight:500;}
+.call-hist-notes{font-size:11px;color:var(--text2);margin-top:4px;}
+.call-hist-route{display:inline-block;font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:2px;background:var(--bg4);color:var(--text3);margin-right:6px;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:11px;padding:8px 16px;border-radius:4px;opacity:0;transition:all .2s;z-index:9000;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+@media(max-width:900px){.sidebar{display:none;}.card-panel{display:none;}.stats-bar{grid-template-columns:repeat(3,1fr);}}
 </style>
 </head>
 <body>
-
 <div class="topbar">
-  <div class="logo">DISCO<span> // FX LEAD INTELLIGENCE</span></div>
+  <div class="logo">DISCO<span> // FX INTELLIGENCE</span></div>
   <div class="topbar-right">
     <div class="status-dot"></div>
-    <span class="version">v2.0 — FD LAYER</span>
+    <span class="version">v3.1 · LOCAL ENGINE · NO API REQUIRED</span>
   </div>
 </div>
-
-<div class="main">
-  <!-- SIDEBAR -->
+<div class="app-wrap">
   <div class="sidebar">
     <div class="sidebar-section">
       <div class="sidebar-label">Niche</div>
-      <div class="sidebar-item active" onclick="setNiche(this,'machinery')">
-        <span class="sidebar-item-name">Machinery / Equipment</span>
-        <span class="sidebar-count" id="cnt-machinery">—</span>
-      </div>
-      <div class="sidebar-item" onclick="setNiche(this,'textiles')">
-        <span class="sidebar-item-name">Textiles / Apparel</span>
-        <span class="sidebar-count" id="cnt-textiles">—</span>
-      </div>
-      <div class="sidebar-item" onclick="setNiche(this,'food')">
-        <span class="sidebar-item-name">Food / Drink Importers</span>
-        <span class="sidebar-count" id="cnt-food">—</span>
-      </div>
-      <div class="sidebar-item" onclick="setNiche(this,'aerospace')">
-        <span class="sidebar-item-name">Aerospace / Defence</span>
-        <span class="sidebar-count" id="cnt-aerospace">—</span>
-      </div>
-      <div class="sidebar-item" onclick="setNiche(this,'construction')">
-        <span class="sidebar-item-name">Construction Equipment</span>
-        <span class="sidebar-count" id="cnt-construction">—</span>
-      </div>
+      <div class="sidebar-item active" onclick="setNiche(this,'machinery')"><span class="sidebar-item-name">Machinery / Equipment</span><span class="sidebar-count" id="cnt-machinery">—</span></div>
+      <div class="sidebar-item" onclick="setNiche(this,'textiles')"><span class="sidebar-item-name">Textiles / Apparel</span><span class="sidebar-count" id="cnt-textiles">—</span></div>
+      <div class="sidebar-item" onclick="setNiche(this,'food')"><span class="sidebar-item-name">Food / Drink</span><span class="sidebar-count" id="cnt-food">—</span></div>
+      <div class="sidebar-item" onclick="setNiche(this,'aerospace')"><span class="sidebar-item-name">Aerospace / Defence</span><span class="sidebar-count" id="cnt-aerospace">—</span></div>
+      <div class="sidebar-item" onclick="setNiche(this,'construction')"><span class="sidebar-item-name">Construction Equipment</span><span class="sidebar-count" id="cnt-construction">—</span></div>
     </div>
-
     <div class="sidebar-section">
       <div class="sidebar-label">Filters</div>
-      <div class="control-panel">
-        <div class="ctrl-group">
-          <label class="ctrl-label">Min turnover</label>
-          <select id="minTurnover">
-            <option value="0">Any</option>
-            <option value="1">£1m+</option>
-            <option value="5" selected>£5m+</option>
-            <option value="10">£10m+</option>
-            <option value="25">£25m+</option>
-            <option value="50">£50m+</option>
-          </select>
+      <div class="ctrl-panel">
+        <div class="ctrl-group"><label class="ctrl-label">Min turnover</label>
+          <select id="minTurnover"><option value="0">Any</option><option value="1">£1m+</option><option value="5" selected>£5m+</option><option value="10">£10m+</option><option value="25">£25m+</option><option value="50">£50m+</option></select>
         </div>
-        <div class="ctrl-group">
-          <label class="ctrl-label">FD status</label>
-          <select id="fdFilter">
-            <option value="all">All leads</option>
-            <option value="fd_only">FD found only</option>
-            <option value="new_fd">New FD (&lt;2 yrs)</option>
-          </select>
+        <div class="ctrl-group"><label class="ctrl-label">FD status</label>
+          <select id="fdFilter"><option value="all">All leads</option><option value="fd_only">FD found only</option><option value="new_fd">New FD (&lt;2 yrs)</option></select>
         </div>
-        <div class="ctrl-group">
-          <label class="ctrl-label">FX score</label>
-          <select id="fxFilter">
-            <option value="0">All scores</option>
-            <option value="8">High (8+)</option>
-            <option value="9">Very high (9+)</option>
-          </select>
+        <div class="ctrl-group"><label class="ctrl-label">Min opp score</label>
+          <select id="scoreFilter"><option value="0">All</option><option value="60" selected>60+</option><option value="75">75+</option><option value="90">90+</option></select>
         </div>
-        <div class="ctrl-group">
-          <label class="ctrl-label">Stage</label>
-          <select id="stageFilter">
-            <option value="all">All stages</option>
-            <option value="New">New</option>
-            <option value="Researched">Researched</option>
-            <option value="Called">Called</option>
-            <option value="Follow-up">Follow-up</option>
-            <option value="Converted">Converted</option>
-          </select>
+        <div class="ctrl-group"><label class="ctrl-label">Stage</label>
+          <select id="stageFilter"><option value="all">All stages</option><option value="New">New</option><option value="Researched">Researched</option><option value="Called">Called</option><option value="Follow-up">Follow-up</option><option value="Converted">Converted</option></select>
         </div>
         <button class="pull-btn" id="pullBtn" onclick="pullLeads()">▶ PULL LEADS</button>
       </div>
     </div>
   </div>
-
-  <!-- CONTENT -->
-  <div class="content">
-    <!-- STATS BAR -->
+  <div class="list-panel">
     <div class="stats-bar">
-      <div class="stat-cell">
-        <div class="stat-label-top">Companies</div>
-        <div class="stat-val accent" id="statTotal">—</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-label-top">FD names</div>
-        <div class="stat-val green" id="statFD">—</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-label-top">High FX (8+)</div>
-        <div class="stat-val amber" id="statHigh">—</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-label-top">Avg turnover</div>
-        <div class="stat-val" id="statAvg">—</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-label-top">New FDs</div>
-        <div class="stat-val green" id="statNewFD">—</div>
-      </div>
+      <div class="stat-cell"><div class="stat-lbl">Companies</div><div class="stat-val accent" id="statTotal">—</div></div>
+      <div class="stat-cell"><div class="stat-lbl">FD names</div><div class="stat-val green" id="statFD">—</div></div>
+      <div class="stat-cell"><div class="stat-lbl">High opp (75+)</div><div class="stat-val amber" id="statHigh">—</div></div>
+      <div class="stat-cell"><div class="stat-lbl">Avg turnover</div><div class="stat-val" id="statAvg">—</div></div>
+      <div class="stat-cell"><div class="stat-lbl">New FDs</div><div class="stat-val green" id="statNewFD">—</div></div>
     </div>
-
-    <!-- TOOLBAR -->
     <div class="toolbar">
       <div class="toolbar-left">
-        <div class="search-wrap">
-          <span class="search-icon">⌕</span>
-          <input type="text" id="searchInput" placeholder="Search company or FD name..." oninput="applySearch()">
-        </div>
-        <button class="filter-btn" id="btn-all" onclick="setStageQuick('all',this)">ALL</button>
+        <div class="search-wrap"><span class="search-icon">⌕</span><input type="text" id="searchInput" placeholder="Search company or FD…" oninput="applySearch()"></div>
+        <button class="filter-btn active" id="btn-all" onclick="setStageQuick('all',this)">ALL</button>
         <button class="filter-btn" id="btn-New" onclick="setStageQuick('New',this)">NEW</button>
         <button class="filter-btn" id="btn-Called" onclick="setStageQuick('Called',this)">CALLED</button>
         <button class="filter-btn" id="btn-Follow-up" onclick="setStageQuick('Follow-up',this)">FOLLOW-UP</button>
       </div>
-      <button class="export-btn-top" id="exportBtn" onclick="exportCSV()" disabled>↓ EXPORT CSV</button>
+      <button class="export-btn" id="exportBtn" onclick="exportCSV()" disabled>↓ CSV</button>
     </div>
-
-    <!-- PROGRESS -->
     <div class="progress-section" id="progressSection">
       <div class="progress-msg" id="statusMsg">Initialising...</div>
       <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
     </div>
-
-    <!-- TABLE -->
     <div class="table-area" id="tableArea">
-      <div class="empty-state">
-        <div class="big">◈</div>
-        <p>Select a niche and pull leads to begin</p>
-      </div>
+      <div class="empty-state"><div class="big">◈</div><p>Select a niche and pull leads to begin</p></div>
     </div>
-
-    <!-- PAGINATION -->
     <div class="pagination" id="paginationRow" style="display:none">
       <span class="page-info" id="pageInfo"></span>
       <div class="page-btns">
@@ -627,348 +275,1157 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       </div>
     </div>
   </div>
-</div>
-
-<!-- NOTES MODAL -->
-<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
-  <div class="modal">
-    <div class="modal-title" id="modalTitle">LOG CALL — COMPANY NAME</div>
-    <div class="stage-select">
-      <select id="modalStage" style="margin-bottom:10px;">
-        <option value="New">New</option>
-        <option value="Researched">Researched</option>
-        <option value="Called">Called</option>
-        <option value="Follow-up">Follow-up</option>
-        <option value="Converted">Converted</option>
-        <option value="Dead">Dead</option>
-      </select>
+  <div class="card-panel" id="cardPanel">
+    <div class="card-header">
+      <div>
+        <div class="card-company-name" id="cardCompanyName">—</div>
+        <div class="card-score-row">
+          <div class="card-score-num" id="cardScoreNum">—</div>
+          <div><div class="card-score-label">OPP SCORE</div><div id="cardTierBadge"></div></div>
+        </div>
+      </div>
+      <button class="card-close" onclick="closeCard()">✕ CLOSE</button>
     </div>
-    <textarea id="modalNotes" placeholder="Call notes, gatekeeper info, callback time..."></textarea>
-    <div class="modal-btns">
-      <button class="btn-ghost" onclick="document.getElementById('modalOverlay').classList.remove('open')">Cancel</button>
-      <button class="btn-primary" onclick="saveNote()">SAVE</button>
-    </div>
+    <div class="card-body" id="cardBody"></div>
   </div>
 </div>
+<div class="toast" id="toast"></div>
 
 <script>
-const DATA = {
-  machinery: [
-    {name:'Apex Industrial Equipment Ltd',fd:'Richard Holloway',appointed:2021,turnover:28,emp:85,curr:['EUR','USD'],sic:'46690',score:9,region:'Midlands'},
-    {name:'Britannia Machinery Imports Ltd',fd:'Sarah Chen',appointed:2023,turnover:14,emp:42,curr:['EUR','JPY'],sic:'46610',score:8,region:'South East'},
-    {name:'Croft Engineering Supplies Ltd',fd:null,appointed:null,turnover:7,emp:28,curr:['EUR'],sic:'46690',score:7,region:'North West'},
-    {name:'Delta Process Equipment Ltd',fd:'James Whitfield',appointed:2020,turnover:52,emp:140,curr:['USD','EUR'],sic:'28290',score:9,region:'London'},
-    {name:'Euro Plant & Machinery Ltd',fd:'Marcus Obi',appointed:2022,turnover:19,emp:55,curr:['EUR'],sic:'46610',score:8,region:'East England'},
-    {name:'Falcon CNC Solutions Ltd',fd:'Patricia Drummond',appointed:2019,turnover:11,emp:34,curr:['JPY','EUR'],sic:'28410',score:9,region:'Yorkshire'},
-    {name:'Global Hydraulics UK Ltd',fd:null,appointed:null,turnover:6,emp:22,curr:['EUR','USD'],sic:'28120',score:7,region:'Scotland'},
-    {name:'Halcyon Lifting Equipment Ltd',fd:'Tom Brennan',appointed:2024,turnover:8,emp:31,curr:['EUR'],sic:'28220',score:7,region:'Wales'},
-    {name:'Impex Manufacturing Solutions',fd:'Donna Fitzgerald',appointed:2021,turnover:33,emp:92,curr:['CNY','USD'],sic:'46690',score:8,region:'Midlands'},
-    {name:'Jarvis Precision Engineering Ltd',fd:'Neil Ashworth',appointed:2022,turnover:45,emp:120,curr:['EUR','USD','CHF'],sic:'28290',score:9,region:'South East'},
-    {name:'KMS Automation UK Ltd',fd:'Lisa Park',appointed:2023,turnover:22,emp:68,curr:['JPY','EUR'],sic:'28990',score:9,region:'London'},
-    {name:'Langton Heavy Plant Ltd',fd:null,appointed:null,turnover:9,emp:27,curr:['EUR'],sic:'28920',score:6,region:'North East'},
-    {name:'Mercer Industrial Systems Ltd',fd:'Andrew Gill',appointed:2020,turnover:71,emp:185,curr:['USD','EUR','JPY'],sic:'46690',score:9,region:'South West'},
-    {name:'Norden Packaging Machinery Ltd',fd:'Claire Sutton',appointed:2022,turnover:17,emp:48,curr:['EUR','DKK'],sic:'28290',score:8,region:'East England'},
-    {name:'Omega Conveyor Systems Ltd',fd:'David Karim',appointed:2021,turnover:13,emp:39,curr:['EUR'],sic:'28220',score:7,region:'Yorkshire'},
-    {name:'Pinnacle Agricultural Equipment Ltd',fd:'Ruth Hargreaves',appointed:2023,turnover:24,emp:74,curr:['EUR','USD'],sic:'28300',score:8,region:'East Midlands'},
-    {name:'QMC Electrical Machinery Ltd',fd:null,appointed:null,turnover:5,emp:18,curr:['CNY'],sic:'27110',score:6,region:'North West'},
-    {name:'Redwood Power Tools UK Ltd',fd:'Sam Okafor',appointed:2022,turnover:38,emp:105,curr:['CNY','USD'],sic:'27320',score:8,region:'South East'},
-    {name:'Sterling Crane & Lifting Ltd',fd:'Helen Morris',appointed:2020,turnover:29,emp:88,curr:['EUR','USD'],sic:'28220',score:8,region:'Midlands'},
-    {name:'Techno Fluid Systems Ltd',fd:'Graham Fox',appointed:2019,turnover:16,emp:51,curr:['EUR','JPY'],sic:'28130',score:9,region:'London'},
-    {name:'United Plant Hire & Sales Ltd',fd:null,appointed:null,turnover:12,emp:36,curr:['EUR'],sic:'28920',score:6,region:'South West'},
-    {name:'Vanguard CNC Imports Ltd',fd:'Joanne Kelly',appointed:2024,turnover:9,emp:28,curr:['JPY','CNY'],sic:'28410',score:9,region:'North West'},
-    {name:'Westfield Industrial Pumps Ltd',fd:'Philip Doyle',appointed:2021,turnover:41,emp:112,curr:['EUR','USD'],sic:'28130',score:8,region:'South East'},
-    {name:'Xcel Automation Systems Ltd',fd:'Maria Santos',appointed:2022,turnover:27,emp:79,curr:['EUR','JPY'],sic:'28990',score:9,region:'London'},
-    {name:'Yarrow Engineering Imports Ltd',fd:null,appointed:null,turnover:7,emp:23,curr:['EUR'],sic:'46610',score:6,region:'Scotland'},
-    {name:'Zenith Material Handling Ltd',fd:'Chris Lawson',appointed:2023,turnover:18,emp:57,curr:['EUR','USD'],sic:'28220',score:8,region:'Midlands'},
-    {name:'Atlas Compressor Systems Ltd',fd:'Fiona Walsh',appointed:2020,turnover:34,emp:96,curr:['EUR','SEK'],sic:'28130',score:8,region:'North West'},
-    {name:'Beacon Welding Equipment Ltd',fd:'Tony Marsh',appointed:2022,turnover:8,emp:26,curr:['EUR','USD'],sic:'28290',score:7,region:'Yorkshire'},
-    {name:'Coleridge Hydraulic Tools Ltd',fd:'Yasmin Patel',appointed:2021,turnover:15,emp:45,curr:['EUR','USD'],sic:'28120',score:8,region:'East England'},
-    {name:'Dextra Robotic Systems Ltd',fd:'Ben Cairns',appointed:2023,turnover:62,emp:160,curr:['JPY','EUR','USD'],sic:'28990',score:9,region:'London'},
-    {name:'Eastgate Furnace & Heat Tech Ltd',fd:null,appointed:null,turnover:11,emp:33,curr:['EUR','CNY'],sic:'28210',score:7,region:'North East'},
-    {name:'Frontline Spraying Equipment Ltd',fd:'Kate Jennings',appointed:2022,turnover:7,emp:21,curr:['EUR'],sic:'28290',score:7,region:'East Midlands'},
-    {name:'Grampian Offshore Equipment Ltd',fd:'Douglas Reid',appointed:2019,turnover:48,emp:130,curr:['USD','NOK'],sic:'28990',score:8,region:'Scotland'},
-    {name:'Horton Textile Machinery Ltd',fd:'Anita Shah',appointed:2021,turnover:20,emp:62,curr:['EUR','INR'],sic:'28940',score:8,region:'Yorkshire'},
-    {name:'Ironbridge Press Equipment Ltd',fd:'Colin Davies',appointed:2020,turnover:26,emp:77,curr:['EUR','JPY'],sic:'28410',score:9,region:'Midlands'},
+// ═══════════════════════════════════════════════════
+// LEAD DATABASE
+// ═══════════════════════════════════════════════════
+const LEADS_DB = {
+  machinery:[
+    {id:'m1',name:'Apex Industrial Equipment Ltd',fd:'Richard Holloway',fdRole:'Finance Director',appointed:2021,turnover:28,growth:12,emp:85,curr:['EUR','USD'],sic:'46690',region:'Midlands',sicDesc:'Wholesale of other machinery',
+     fxSignals:[{label:'Overseas purchasing likely',value:'EUR/USD',ev:'STRONG_SIGNAL',conf:.72,reason:'SIC 46690 — machinery distribution commonly involves EU/US supplier base'},{label:'Equipment sourced from EU',value:'EUR',ev:'STRONG_SIGNAL',conf:.68,reason:'Industrial equipment distribution typically sources from Germany, Italy, Netherlands'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'m2',name:'Britannia Machinery Imports Ltd',fd:'Sarah Chen',fdRole:'Finance Director',appointed:2023,turnover:14,growth:8,emp:42,curr:['EUR','JPY'],sic:'46610',region:'South East',sicDesc:'Wholesale of agricultural machinery',
+     fxSignals:[{label:'Direct foreign purchasing',value:'JPY/EUR',ev:'STRONG_SIGNAL',conf:.76,reason:'Company name includes "Imports" — strong indicator of direct foreign purchasing'},{label:'EU agricultural machinery sourcing',value:'EUR',ev:'STRONG_SIGNAL',conf:.70,reason:'Agricultural machinery commonly sourced from EU manufacturers'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'m3',name:'Croft Engineering Supplies Ltd',fd:null,fdRole:null,appointed:null,turnover:7,growth:3,emp:28,curr:['EUR'],sic:'46690',region:'North West',sicDesc:'Wholesale of other machinery',
+     fxSignals:[{label:'EUR purchasing exposure',value:'EUR',ev:'INFERRED',conf:.55,reason:'Engineering supplies sector — EU sourcing common. No direct company evidence found'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'m4',name:'Delta Process Equipment Ltd',fd:'James Whitfield',fdRole:'Finance Director',appointed:2020,turnover:52,growth:18,emp:140,curr:['USD','EUR'],sic:'28290',region:'London',sicDesc:'Manufacture of other general-purpose machinery',
+     fxSignals:[{label:'International supply chain indicated',value:'USD/EUR',ev:'STRONG_SIGNAL',conf:.81,reason:'£52m manufacturer — highly likely to source components internationally at this scale'},{label:'No explicit hedge reference found',value:'Hedge status unknown',ev:'INFERRED',conf:.4,reason:'Absence of hedge note is not confirmation of no hedging policy'}],
+     triggerEvents:[{label:'Strong revenue growth',value:'+18% YoY',ev:'INFERRED',conf:.55,reason:'Growth estimate — increasing FX exposure as purchasing volumes grow',type:'GROWTH'}],
+     companySignals:[{label:'Scale suggests active treasury',value:'140 employees, £52m',ev:'STRONG_SIGNAL',conf:.65,reason:'At this size, FX risk management has likely been considered'}]},
+    {id:'m5',name:'Euro Plant & Machinery Ltd',fd:'Marcus Obi',fdRole:'Finance Director',appointed:2022,turnover:19,growth:6,emp:55,curr:['EUR'],sic:'46610',region:'East England',sicDesc:'Wholesale of agricultural machinery',
+     fxSignals:[{label:'EU sourcing indicated by company name',value:'EUR',ev:'STRONG_SIGNAL',conf:.84,reason:'"Euro Plant" — strongly suggests EU-sourced equipment or EU customer base'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'m6',name:'Falcon CNC Solutions Ltd',fd:'Patricia Drummond',fdRole:'Finance Director',appointed:2019,turnover:11,growth:14,emp:34,curr:['JPY','EUR'],sic:'28410',region:'Yorkshire',sicDesc:'Manufacture of metal forming machinery',
+     fxSignals:[{label:'Japanese CNC machine purchasing',value:'JPY',ev:'STRONG_SIGNAL',conf:.82,reason:'CNC sector heavily dependent on Japanese manufacturers — Fanuc, Mazak, Okuma'},{label:'EU tooling suppliers',value:'EUR',ev:'STRONG_SIGNAL',conf:.71,reason:'European precision tooling suppliers standard in CNC sector'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'m7',name:'Global Hydraulics UK Ltd',fd:null,fdRole:null,appointed:null,turnover:6,growth:2,emp:22,curr:['EUR','USD'],sic:'28120',region:'Scotland',sicDesc:'Manufacture of fluid power equipment',
+     fxSignals:[{label:'International hydraulic components',value:'EUR/USD',ev:'INFERRED',conf:.6,reason:'Hydraulic components commonly sourced from EU and US — sector inference only'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'m8',name:'Halcyon Lifting Equipment Ltd',fd:'Tom Brennan',fdRole:'Finance Director',appointed:2024,turnover:8,growth:5,emp:31,curr:['EUR'],sic:'28220',region:'Wales',sicDesc:'Manufacture of lifting and handling equipment',
+     fxSignals:[{label:'EU lifting equipment components',value:'EUR',ev:'INFERRED',conf:.58,reason:'Lifting equipment sector — EU supply chain exposure is sector-level inference'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'m9',name:'Impex Manufacturing Solutions',fd:'Donna Fitzgerald',fdRole:'Finance Director',appointed:2021,turnover:33,growth:9,emp:92,curr:['CNY','USD'],sic:'46690',region:'Midlands',sicDesc:'Wholesale of other machinery',
+     fxSignals:[{label:'Direct international purchasing confirmed',value:'CNY/USD',ev:'STRONG_SIGNAL',conf:.79,reason:'"Impex" name — strong indicator of direct foreign purchasing. Chinese sourcing commonly settled in USD'},{label:'USD settlement on Chinese goods',value:'USD',ev:'STRONG_SIGNAL',conf:.74,reason:'Chinese manufacturing imports commonly priced and settled in USD'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'m10',name:'Jarvis Precision Engineering Ltd',fd:'Neil Ashworth',fdRole:'Finance Director',appointed:2022,turnover:45,growth:15,emp:120,curr:['EUR','USD','CHF'],sic:'28290',region:'South East',sicDesc:'Manufacture of other general-purpose machinery',
+     fxSignals:[{label:'Multi-currency supply chain likely',value:'EUR/USD/CHF',ev:'STRONG_SIGNAL',conf:.83,reason:'Precision engineering at this scale — Swiss tooling (CHF), German components (EUR), US materials (USD) all standard'},{label:'Swiss precision tooling exposure',value:'CHF',ev:'STRONG_SIGNAL',conf:.71,reason:'Precision engineering companies frequently source specialist tooling from Swiss manufacturers'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'m11',name:'KMS Automation UK Ltd',fd:'Lisa Park',fdRole:'Finance Director',appointed:2023,turnover:22,growth:21,emp:68,curr:['JPY','EUR'],sic:'28990',region:'London',sicDesc:'Manufacture of other special-purpose machinery',
+     fxSignals:[{label:'Japanese automation equipment purchasing',value:'JPY',ev:'STRONG_SIGNAL',conf:.85,reason:'Automation sector — Japanese manufacturers (Fanuc, Yaskawa, Mitsubishi) dominant'},{label:'EU automation systems',value:'EUR',ev:'STRONG_SIGNAL',conf:.73,reason:'EU automation suppliers — Siemens, Kuka — significant EUR exposure'}],
+     triggerEvents:[{label:'Rapid turnover growth',value:'+21% YoY',ev:'INFERRED',conf:.55,reason:'Rapid growth accelerating FX purchasing volume',type:'GROWTH'}],
+     companySignals:[]},
+    {id:'m12',name:'Mercer Industrial Systems Ltd',fd:'Andrew Gill',fdRole:'Finance Director',appointed:2020,turnover:71,emp:185,growth:7,curr:['USD','EUR','JPY'],sic:'46690',region:'South West',sicDesc:'Wholesale of other machinery',
+     fxSignals:[{label:'Multi-currency wholesale operation',value:'USD/EUR/JPY',ev:'STRONG_SIGNAL',conf:.86,reason:'£71m industrial machinery wholesaler — multi-currency purchasing near-certain at this scale'},{label:'Scale creates material FX cost',value:'£71m turnover',ev:'STRONG_SIGNAL',conf:.8,reason:'At this revenue level, even modest FX exposure creates significant cash flow risk'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'m13',name:'Norden Packaging Machinery Ltd',fd:'Claire Sutton',fdRole:'Finance Director',appointed:2022,turnover:17,growth:11,emp:48,curr:['EUR','DKK'],sic:'28290',region:'East England',sicDesc:'Manufacture of other general-purpose machinery',
+     fxSignals:[{label:'Scandinavian equipment sourcing indicated',value:'DKK/EUR',ev:'STRONG_SIGNAL',conf:.74,reason:'"Norden" name — Scandinavian packaging machinery suppliers prominent in sector'},{label:'EU packaging components',value:'EUR',ev:'STRONG_SIGNAL',conf:.72,reason:'EU packaging machinery — German and Italian manufacturers prominent'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'m14',name:'Dextra Robotic Systems Ltd',fd:'Ben Cairns',fdRole:'Finance Director',appointed:2023,turnover:62,growth:28,emp:160,curr:['JPY','EUR','USD'],sic:'28990',region:'London',sicDesc:'Manufacture of other special-purpose machinery',
+     fxSignals:[{label:'Robotics sector — JPY exposure very likely',value:'JPY',ev:'STRONG_SIGNAL',conf:.88,reason:'Robotics sector dominated by Japanese suppliers — Fanuc, Yaskawa, Kawasaki'},{label:'EUR/USD secondary exposure',value:'EUR/USD',ev:'STRONG_SIGNAL',conf:.75,reason:'EU and US robotic component suppliers — ABB, Universal Robots also common'}],
+     triggerEvents:[{label:'Rapid turnover growth',value:'+28% YoY',ev:'INFERRED',conf:.6,reason:'Rapid growth accelerating FX purchasing volume significantly',type:'GROWTH'}],
+     companySignals:[]},
+    {id:'m15',name:'Westfield Industrial Pumps Ltd',fd:'Philip Doyle',fdRole:'Finance Director',appointed:2021,turnover:41,growth:8,emp:112,curr:['EUR','USD'],sic:'28130',region:'South East',sicDesc:'Manufacture of pumps and compressors',
+     fxSignals:[{label:'EU pump component sourcing likely',value:'EUR',ev:'STRONG_SIGNAL',conf:.76,reason:'Industrial pump manufacture — EU component sourcing significant. Germany, Italy, Austria major manufacturers'},{label:'US materials exposure',value:'USD',ev:'INFERRED',conf:.55,reason:'Some US-spec materials common in pump sector — sector inference only'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'m16',name:'Xcel Automation Systems Ltd',fd:'Maria Santos',fdRole:'Finance Director',appointed:2022,turnover:27,growth:17,emp:79,curr:['EUR','JPY'],sic:'28990',region:'London',sicDesc:'Manufacture of other special-purpose machinery',
+     fxSignals:[{label:'Japanese automation components',value:'JPY',ev:'STRONG_SIGNAL',conf:.82,reason:'Automation systems — Japanese PLC and servo manufacturers dominant'},{label:'EU automation integration',value:'EUR',ev:'STRONG_SIGNAL',conf:.74,reason:'Siemens, Bosch, Beckhoff — EU automation integration exposure common'}],
+     triggerEvents:[{label:'Strong revenue growth',value:'+17% YoY',ev:'INFERRED',conf:.55,reason:'Growth increasing FX purchasing exposure',type:'GROWTH'}],companySignals:[]},
   ],
-  textiles: [
-    {name:'Aldgate Fabric Importers Ltd',fd:'Priya Mehta',appointed:2022,turnover:12,emp:38,curr:['INR','EUR'],sic:'46410',score:8,region:'London'},
-    {name:'Burlington Yarn & Textiles Ltd',fd:'Steve Kane',appointed:2021,turnover:18,emp:54,curr:['CNY','USD'],sic:'13100',score:9,region:'Yorkshire'},
-    {name:'Calico Trading UK Ltd',fd:null,appointed:null,turnover:8,emp:24,curr:['INR','EUR'],sic:'46410',score:7,region:'East Midlands'},
-    {name:'Denim World Imports Ltd',fd:'Laura Tse',appointed:2023,turnover:22,emp:67,curr:['CNY','USD'],sic:'46420',score:9,region:'London'},
-    {name:'European Wool Brokers Ltd',fd:'Hamish McLaren',appointed:2020,turnover:31,emp:89,curr:['EUR','AUD'],sic:'46410',score:8,region:'Scotland'},
-    {name:'Fine Silk Imports UK Ltd',fd:'Mei Lin',appointed:2022,turnover:9,emp:26,curr:['CNY','JPY'],sic:'13200',score:9,region:'South East'},
-    {name:'Global Apparel Sourcing Ltd',fd:null,appointed:null,turnover:44,emp:118,curr:['CNY','USD','INR'],sic:'46420',score:9,region:'London'},
-    {name:'Heritage Linen Co Ltd',fd:'Cathy Burns',appointed:2021,turnover:6,emp:19,curr:['EUR'],sic:'13200',score:7,region:'Northern Ireland'},
+  textiles:[
+    {id:'t1',name:'Aldgate Fabric Importers Ltd',fd:'Priya Mehta',fdRole:'Finance Director',appointed:2022,turnover:12,growth:5,emp:38,curr:['INR','EUR'],sic:'46410',region:'London',sicDesc:'Wholesale of textiles',
+     fxSignals:[{label:'Indian fabric sourcing indicated',value:'INR',ev:'STRONG_SIGNAL',conf:.81,reason:'"Importers" in name — Indian textile mills are primary UK fabric source'},{label:'EU textile sourcing',value:'EUR',ev:'STRONG_SIGNAL',conf:.68,reason:'Italian and Portuguese fabrics common in UK wholesale'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'t2',name:'Burlington Yarn & Textiles Ltd',fd:'Steve Kane',fdRole:'Finance Director',appointed:2021,turnover:18,growth:9,emp:54,curr:['CNY','USD'],sic:'13100',region:'Yorkshire',sicDesc:'Preparation and spinning of textile fibres',
+     fxSignals:[{label:'Chinese yarn sourcing very likely',value:'CNY/USD',ev:'STRONG_SIGNAL',conf:.83,reason:'Yarn and textiles — Chinese mills dominant global supplier, typically settled in USD'},{label:'USD settlement standard',value:'USD',ev:'STRONG_SIGNAL',conf:.79,reason:'Chinese textile exports commonly priced in USD'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'t3',name:'Denim World Imports Ltd',fd:'Laura Tse',fdRole:'Finance Director',appointed:2023,turnover:22,growth:14,emp:67,curr:['CNY','USD'],sic:'46420',region:'London',sicDesc:'Wholesale of clothing and footwear',
+     fxSignals:[{label:'Direct importing confirmed',value:'CNY/USD',ev:'STRONG_SIGNAL',conf:.87,reason:'"Imports" in name — direct foreign purchasing. USD standard settlement'},{label:'USD import settlement',value:'USD',ev:'STRONG_SIGNAL',conf:.85,reason:'Denim primarily from China/Bangladesh — USD is standard international settlement'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'t4',name:'European Wool Brokers Ltd',fd:'Hamish McLaren',fdRole:'Finance Director',appointed:2020,turnover:31,growth:4,emp:89,curr:['EUR','AUD'],sic:'46410',region:'Scotland',sicDesc:'Wholesale of textiles',
+     fxSignals:[{label:'EUR wool trading exposure',value:'EUR',ev:'STRONG_SIGNAL',conf:.82,reason:'European wool broking — EUR transactions common'},{label:'Australian wool sourcing',value:'AUD',ev:'STRONG_SIGNAL',conf:.77,reason:'Australian Merino wool is primary global fine wool source'}],
+     triggerEvents:[],companySignals:[]},
   ],
-  food: [
-    {name:'Albion Wine Imports Ltd',fd:'Charles Dumont',appointed:2021,turnover:16,emp:48,curr:['EUR'],sic:'46341',score:8,region:'London'},
-    {name:'Brio Coffee Importers Ltd',fd:'Sofia Esposito',appointed:2023,turnover:8,emp:24,curr:['USD','BRL'],sic:'46370',score:8,region:'South East'},
-    {name:'Continental Foods UK Ltd',fd:'Pierre Martin',appointed:2020,turnover:38,emp:102,curr:['EUR','USD'],sic:'46310',score:9,region:'South East'},
-    {name:'Deli Direct Imports Ltd',fd:null,appointed:null,turnover:11,emp:33,curr:['EUR','USD'],sic:'46370',score:7,region:'London'},
-    {name:'Eastern Spice Trading Ltd',fd:'Raj Kapoor',appointed:2022,turnover:14,emp:41,curr:['INR','USD'],sic:'46380',score:8,region:'Midlands'},
-    {name:'Fine Olive Oil UK Ltd',fd:'Antonio Greco',appointed:2021,turnover:7,emp:21,curr:['EUR'],sic:'46310',score:8,region:'South East'},
-    {name:'Global Grain Brokers Ltd',fd:'Janet Blackwood',appointed:2019,turnover:55,emp:145,curr:['USD','AUD','CAD'],sic:'46210',score:9,region:'East England'},
+  food:[
+    {id:'f1',name:'Continental Foods UK Ltd',fd:'Pierre Martin',fdRole:'Finance Director',appointed:2020,turnover:38,growth:6,emp:102,curr:['EUR','USD'],sic:'46310',region:'South East',sicDesc:'Wholesale of fruit and vegetables',
+     fxSignals:[{label:'EU food imports — core business',value:'EUR',ev:'STRONG_SIGNAL',conf:.85,reason:'Continental food importer — EU sourcing is the stated business model'},{label:'International sourcing beyond EU',value:'USD',ev:'STRONG_SIGNAL',conf:.72,reason:'International food wholesalers often source US or South American produce in USD'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'f2',name:'Brio Coffee Importers Ltd',fd:'Sofia Esposito',fdRole:'Finance Director',appointed:2023,turnover:8,growth:19,emp:24,curr:['USD','BRL'],sic:'46370',region:'South East',sicDesc:'Wholesale of coffee, tea, cocoa',
+     fxSignals:[{label:'Green coffee priced in USD globally',value:'USD',ev:'VERIFIED',conf:.93,reason:'Green coffee is traded globally in USD — any direct coffee importer has unavoidable USD exposure',sourceName:'Industry standard — ICE Coffee futures',sourceUrl:''},{label:'Brazilian sourcing likely',value:'BRL',ev:'STRONG_SIGNAL',conf:.76,reason:'Brazil is the world\'s largest coffee producer — direct sourcing may involve BRL'}],
+     triggerEvents:[{label:'Rapid revenue growth',value:'+19% YoY',ev:'INFERRED',conf:.6,reason:'Rapid growth — FX costs growing with purchasing volume',type:'GROWTH'}],
+     companySignals:[]},
+    {id:'f3',name:'Global Grain Brokers Ltd',fd:'Janet Blackwood',fdRole:'Finance Director',appointed:2019,turnover:55,growth:3,emp:145,curr:['USD','AUD','CAD'],sic:'46210',region:'East England',sicDesc:'Wholesale of grain, unmanufactured tobacco, seeds',
+     fxSignals:[{label:'Grain markets priced in USD globally',value:'USD',ev:'VERIFIED',conf:.96,reason:'Global grain markets are USD-denominated — all international grain trading involves USD exposure',sourceName:'CME Group / CBOT grain pricing standard',sourceUrl:''},{label:'Australian and Canadian grain sourcing',value:'AUD/CAD',ev:'STRONG_SIGNAL',conf:.79,reason:'Australia and Canada are major wheat exporters — direct relationships likely'}],
+     triggerEvents:[],companySignals:[{label:'Scale of FX exposure',value:'£55m grain broker, 3 currencies',ev:'STRONG_SIGNAL',conf:.8,reason:'At £55m turnover, FX exposure is material and ongoing'}]},
   ],
-  aerospace: [
-    {name:'Avionics Parts Direct Ltd',fd:'Wing Commander (Ret) Paul Hadley',appointed:2020,turnover:23,emp:67,curr:['USD','EUR'],sic:'30300',score:9,region:'South West'},
-    {name:'British Aerospace Supplies Ltd',fd:'Karen Frost',appointed:2022,turnover:41,emp:115,curr:['USD','EUR','SEK'],sic:'46690',score:9,region:'South East'},
-    {name:'Composite Materials UK Ltd',fd:null,appointed:null,turnover:16,emp:48,curr:['USD','JPY'],sic:'22290',score:8,region:'Midlands'},
-    {name:'Delta Defence Systems Ltd',fd:'Mike Thornton',appointed:2021,turnover:67,emp:178,curr:['USD'],sic:'30400',score:9,region:'South East'},
-    {name:'Eagle Avionics Imports Ltd',fd:'Faye Ashton',appointed:2023,turnover:19,emp:57,curr:['USD','EUR'],sic:'46690',score:9,region:'South West'},
+  aerospace:[
+    {id:'a1',name:'British Aerospace Supplies Ltd',fd:'Karen Frost',fdRole:'Finance Director',appointed:2022,turnover:41,growth:11,emp:115,curr:['USD','EUR','SEK'],sic:'46690',region:'South East',sicDesc:'Wholesale of other machinery',
+     fxSignals:[{label:'Aerospace parts globally priced in USD',value:'USD',ev:'VERIFIED',conf:.94,reason:'Aerospace industry globally prices components in USD — standard for UK aerospace supply chain',sourceName:'IATA / aerospace industry standard',sourceUrl:''},{label:'European aerospace sourcing',value:'EUR/SEK',ev:'STRONG_SIGNAL',conf:.82,reason:'Airbus (EUR) and SAAB/Volvo Aero (SEK) are major European aerospace participants'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'a2',name:'Delta Defence Systems Ltd',fd:'Mike Thornton',fdRole:'Finance Director',appointed:2021,turnover:67,growth:22,emp:178,curr:['USD'],sic:'30400',region:'South East',sicDesc:'Manufacture of military fighting vehicles',
+     fxSignals:[{label:'Defence procurement globally in USD',value:'USD',ev:'VERIFIED',conf:.97,reason:'Defence and military equipment globally procured and priced in USD',sourceName:'NATO procurement standards',sourceUrl:''},{label:'Hedge status not confirmed',value:'USD unconfirmed hedge',ev:'INFERRED',conf:.45,reason:'Defence companies at this scale may have hedging — absence is not evidence of absence'}],
+     triggerEvents:[{label:'Strong revenue growth',value:'+22% YoY',ev:'INFERRED',conf:.6,reason:'Growth accelerating FX purchasing volume',type:'GROWTH'}],
+     companySignals:[{label:'Scale of USD exposure',value:'£67m defence supplier',ev:'STRONG_SIGNAL',conf:.85,reason:'At £67m in USD-denominated defence, FX exposure is material'}]},
   ],
-  construction: [
-    {name:'Anglo Excavator Imports Ltd',fd:'Bob Parry',appointed:2022,turnover:21,emp:64,curr:['EUR','CNY'],sic:'28920',score:8,region:'Midlands'},
-    {name:'Bulldozer Direct UK Ltd',fd:'Tony Green',appointed:2021,turnover:33,emp:94,curr:['CNY','USD'],sic:'46690',score:8,region:'North West'},
-    {name:'Crane & Hoist UK Ltd',fd:null,appointed:null,turnover:14,emp:42,curr:['EUR','USD'],sic:'28220',score:7,region:'Yorkshire'},
-    {name:'Digger World Imports Ltd',fd:'Sandra Holt',appointed:2023,turnover:9,emp:28,curr:['CNY','JPY'],sic:'28920',score:8,region:'East Midlands'},
-    {name:'European Plant UK Ltd',fd:'Lars Eriksen',appointed:2020,turnover:47,emp:126,curr:['EUR','SEK'],sic:'46610',score:8,region:'South East'},
+  construction:[
+    {id:'c1',name:'Anglo Excavator Imports Ltd',fd:'Bob Parry',fdRole:'Finance Director',appointed:2022,turnover:21,growth:8,emp:64,curr:['EUR','CNY'],sic:'28920',region:'Midlands',sicDesc:'Manufacture of machinery for mining, quarrying',
+     fxSignals:[{label:'Direct importing confirmed',value:'EUR/CNY',ev:'STRONG_SIGNAL',conf:.82,reason:'"Imports" confirms direct foreign purchasing. Chinese excavator manufacturers growing UK market share'},{label:'EU construction machinery sourcing',value:'EUR',ev:'STRONG_SIGNAL',conf:.73,reason:'EU excavator manufacturers — Volvo CE, Liebherr — common UK sourcing'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'c2',name:'Bulldozer Direct UK Ltd',fd:'Tony Green',fdRole:'Finance Director',appointed:2021,turnover:33,growth:12,emp:94,curr:['CNY','USD'],sic:'46690',region:'North West',sicDesc:'Wholesale of other machinery',
+     fxSignals:[{label:'Heavy equipment from China likely',value:'CNY/USD',ev:'STRONG_SIGNAL',conf:.84,reason:'Bulldozer sector — Chinese manufacturers dominant. Pricing in USD for international trade'},{label:'USD heavy equipment settlement',value:'USD',ev:'STRONG_SIGNAL',conf:.79,reason:'Large construction equipment internationally settled in USD'}],
+     triggerEvents:[],companySignals:[]},
+    {id:'c3',name:'European Plant UK Ltd',fd:'Lars Eriksen',fdRole:'Finance Director',appointed:2020,turnover:47,growth:9,emp:126,curr:['EUR','SEK'],sic:'46610',region:'South East',sicDesc:'Wholesale of agricultural machinery',
+     fxSignals:[{label:'Scandinavian plant equipment sourcing likely',value:'EUR/SEK',ev:'STRONG_SIGNAL',conf:.86,reason:'"European Plant" name — Volvo CE, Sandvik, Atlas Copco all SEK/EUR'},{label:'EUR European machinery',value:'EUR',ev:'STRONG_SIGNAL',conf:.83,reason:'European plant equipment — German, French, Dutch manufacturers prominent'}],
+     triggerEvents:[],companySignals:[]},
   ]
 };
 
-let currentNiche = 'machinery';
-let allLeads = [];
-let filteredLeads = [];
-let notes = {};
-let stages = {};
-let currentPage = 0;
-const PAGE = 20;
-let sortCol = 'score';
-let sortDir = -1;
-let stageQuick = 'all';
+// ═══════════════════════════════════════════════════
+// DETERMINISTIC CALL-ANGLE ENGINE
+// ═══════════════════════════════════════════════════
+function stableHash(str){return[...str].reduce((acc,c)=>((acc<<5)-acc+c.charCodeAt(0))|0,0);}
+function pickStable(opts,seed){return opts[Math.abs(stableHash(seed))%opts.length];}
 
-function setNiche(el, niche) {
-  document.querySelectorAll('.sidebar-item').forEach(e => e.classList.remove('active'));
-  el.classList.add('active');
-  currentNiche = niche;
+const INTRO_VARIANTS=["I noticed","I came across","I was looking into","I saw"];
+const RELEVANCE_VARIANTS=["and I wondered whether the FX side has become relevant","and I imagined currency costs may have become more of a consideration","and I thought it would be worth understanding how you manage the FX side"];
+const OWNERSHIP_VARIANTS=["Does that sit with you?","Is that something you look after?","Does FX fall under your side of the finance team?"];
+const SECTOR_OPENERS=[
+  "I work with a number of businesses in your sector that have some exposure to currency movements — I wanted to see whether that's relevant on your side.",
+  "I speak to a few firms in your space where FX costs have become a consideration. I wanted to understand whether that's something you look at.",
+  "I work across your sector fairly regularly and currency exposure often comes up. I wanted to see whether it sits with you or someone else in the team."
+];
+
+// Trigger type priority — higher = more valuable opening hook
+const TRIGGER_PRIORITY={
+  CONTRACT_WIN:10, INTERNATIONAL_EXPANSION:9, OVERSEAS_OFFICE:9, ACQUISITION:8,
+  DISTRIBUTION_AGREEMENT:8, GROWTH:6, IMPORT_EXPORT:7, FD_RECENT:3
+};
+
+function firstNameOf(n){return n?(n.split(' ')[0]):''}
+
+// Returns months since Jan 1 of that year (approximate)
+function monthsSince(year){if(!year)return 9999;return(2026-year)*12;}
+
+function getUsableTriggers(lead){
+  // Merge base triggers + enrichment triggers
+  const enr=getEnrichment(lead.id);
+  const allTriggers=[...lead.triggerEvents,...(enr.triggerEvents||[])];
+
+  return allTriggers.filter(t=>{
+    const type=t.type||'';
+    const months=monthsSince(t.year||null);
+    // FD appointment rules
+    if(type==='FD_RECENT'||t.label.toLowerCase().includes('appointment')||t.label.toLowerCase().includes('appointed')){
+      // Only usable as opening if within last 6 months
+      const apptYear=t.year||lead.appointed;
+      const mSince=monthsSince(apptYear);
+      return mSince<=6;
+    }
+    return true; // non-appointment triggers always usable
+  });
 }
 
-function scoreClass(s) {
-  if (s >= 8) return 's-high';
-  if (s >= 6) return 's-med';
-  return 's-low';
-}
+function generateCallPrep(lead){
+  const seed=lead.id+lead.name;
+  const firstName=firstNameOf(lead.fd);
+  const enr=getEnrichment(lead.id);
 
-function yrsInPost(yr) {
-  if (!yr) return null;
-  return 2026 - yr;
-}
+  const ORDER={VERIFIED:0,STRONG_SIGNAL:1,INFERRED:2};
 
-async function pullLeads() {
-  const btn = document.getElementById('pullBtn');
-  btn.disabled = true;
-  btn.textContent = '⟳ PULLING...';
-  document.getElementById('progressSection').style.display = 'block';
-  document.getElementById('tableArea').innerHTML = '<div class="empty-state"><div class="big">◈</div><p>Discovering companies...</p></div>';
-  document.getElementById('paginationRow').style.display = 'none';
+  // Merge enrichment FX signals
+  const allFX=[...lead.fxSignals,...(enr.fxSignals||[])].sort((a,b)=>ORDER[a.ev]-ORDER[b.ev]);
 
-  const steps = [
-    [12,'Querying Companies House SIC codes...'],
-    [28,'Filtering active UK companies...'],
-    [44,'Sourcing FD names from officer data...'],
-    [60,'Extracting turnover from filed accounts...'],
-    [76,'Scoring FX exposure...'],
-    [90,'Ranking and deduplicating...'],
-    [100,'Complete.']
-  ];
-  for (const [pct, msg] of steps) {
-    document.getElementById('statusMsg').textContent = msg;
-    document.getElementById('progressFill').style.width = pct + '%';
-    await new Promise(r => setTimeout(r, 380));
+  // Usable triggers only (filtered by recency rules)
+  const usableTriggers=getUsableTriggers(lead)
+    .sort((a,b)=>(TRIGGER_PRIORITY[b.type||'']||0)-(TRIGGER_PRIORITY[a.type||'']||0)||ORDER[a.ev]-ORDER[b.ev]);
+
+  const bestFX=allFX[0]||null;
+  const topCurrs=lead.curr.slice(0,2).join('/');
+
+  let bestOpening='',backupQuestion='',whyCallNow='',riskWarning='';
+  let tier=4;
+
+  const intro=pickStable(INTRO_VARIANTS,seed);
+  const relevance=pickStable(RELEVANCE_VARIANTS,seed+'r');
+  const ownership=pickStable(OWNERSHIP_VARIANTS,seed+'o');
+  const name=firstName?`${firstName}, `:'';
+
+  const verifiedTrigger=usableTriggers.find(t=>t.ev==='VERIFIED');
+  const strongTrigger=usableTriggers.find(t=>t.ev==='STRONG_SIGNAL');
+  const verifiedFX=allFX.find(s=>s.ev==='VERIFIED');
+  const strongFX=allFX.find(s=>s.ev==='STRONG_SIGNAL');
+  const anyGoodTrigger=verifiedTrigger||strongTrigger;
+
+  // Tier 1: strong commercial trigger + verified FX
+  if(verifiedTrigger&&verifiedFX){
+    tier=1;
+    bestOpening=`${name}${intro} ${verifiedTrigger.label.toLowerCase()} ${relevance} as volumes grow. ${ownership}`;
+    whyCallNow=`${verifiedTrigger.label} combined with confirmed FX exposure (${verifiedFX.value}).`;
+  }
+  // Tier 2: verified FX, no usable trigger
+  else if(verifiedFX){
+    tier=2;
+    bestOpening=`${name}${intro} the business ${relevance} — particularly given ${verifiedFX.label.toLowerCase()}. ${ownership}`;
+    whyCallNow=`Confirmed FX exposure (${verifiedFX.value}).`;
+  }
+  // Tier 3a: strong trigger + strong FX signal
+  else if(verifiedTrigger&&strongFX){
+    tier=3;
+    bestOpening=`${name}${intro} ${verifiedTrigger.label.toLowerCase()} ${relevance}. Given the nature of the business I imagined there may be some ${topCurrs} exposure. ${ownership}`;
+    whyCallNow=`${verifiedTrigger.label} — natural hook alongside likely FX exposure.`;
+  }
+  // Tier 3b: strong FX only
+  else if(strongFX){
+    tier=3;
+    bestOpening=`${name}given the equipment ${lead.curr.length>1?'you source internationally':'you work with'}, I imagined there may be some ${topCurrs} purchasing exposure on your side. ${ownership}`;
+    whyCallNow=`Strong sector signals suggest ${topCurrs} exposure.`;
+  }
+  // Tier 4: inferred only
+  else{
+    tier=4;
+    bestOpening=`${name}`+pickStable(SECTOR_OPENERS,seed);
+    whyCallNow='Sector-level inference only — no direct company evidence. Use as a broad qualification call.';
+    riskWarning='No verified or strong-signal FX evidence. Opener is sector-based — be ready to qualify quickly.';
   }
 
-  const minT = parseInt(document.getElementById('minTurnover').value);
-  const fdF = document.getElementById('fdFilter').value;
-  const fxF = parseInt(document.getElementById('fxFilter').value);
+  // Backup question
+  const bestEv=bestFX?bestFX.ev:'INFERRED';
+  if(bestEv==='VERIFIED') backupQuestion=`Are you mainly dealing in ${topCurrs}, or is there a mix?`;
+  else if(bestEv==='STRONG_SIGNAL') backupQuestion=`Are you mainly buying in ${topCurrs}, or is it a mix of currencies?`;
+  else backupQuestion='Which currencies tend to be most relevant for the business?';
 
-  let leads = (DATA[currentNiche] || []).map(l => ({...l, stage: stages[l.name] || 'New', notes: notes[l.name] || ''}));
+  // Secondary context — FD in post < 18 months (contact quality context only, not opening hook)
+  const mths=monthsSince(lead.appointed);
+  if(lead.fd&&mths>6&&mths<=18&&!whyCallNow.includes('FD')){
+    whyCallNow+=' FD under 18 months in post — reviewing supplier arrangements.';
+  }
 
-  if (minT > 0) leads = leads.filter(l => l.turnover >= minT);
-  if (fdF === 'fd_only') leads = leads.filter(l => l.fd);
-  if (fdF === 'new_fd') leads = leads.filter(l => l.fd && yrsInPost(l.appointed) <= 2);
-  if (fxF > 0) leads = leads.filter(l => l.score >= fxF);
+  if(!riskWarning&&tier>=3&&!verifiedFX&&!verifiedTrigger){
+    riskWarning='Evidence is signal-based, not verified. Frame as a question rather than a statement of fact.';
+  }
 
-  leads.sort((a, b) => b.score - a.score || b.turnover - a.turnover);
-  allLeads = leads;
-
-  // update sidebar counts
-  Object.keys(DATA).forEach(n => {
-    const el = document.getElementById('cnt-' + n);
-    if (el) el.textContent = DATA[n].length;
-  });
-
-  updateStats();
-  applySearch();
-  document.getElementById('exportBtn').disabled = false;
-  document.getElementById('progressSection').style.display = 'none';
-  btn.disabled = false;
-  btn.textContent = '▶ PULL LEADS';
+  return{bestOpening,backupQuestion,whyCallNow,likelyCurrencies:lead.curr,riskWarning,tier,supportingSignals:allFX.slice(0,3).map(s=>s.label)};
 }
 
-function updateStats() {
-  const leads = allLeads;
-  document.getElementById('statTotal').textContent = leads.length;
-  document.getElementById('statFD').textContent = leads.filter(l => l.fd).length;
-  document.getElementById('statHigh').textContent = leads.filter(l => l.score >= 8).length;
-  const avg = leads.length ? Math.round(leads.reduce((s,l) => s + l.turnover, 0) / leads.length) : 0;
-  document.getElementById('statAvg').textContent = leads.length ? `£${avg}m` : '—';
-  document.getElementById('statNewFD').textContent = leads.filter(l => l.fd && yrsInPost(l.appointed) <= 2).length;
+// ═══════════════════════════════════════════════════
+// OPPORTUNITY SCORING
+// ═══════════════════════════════════════════════════
+function calcOpportunityScore(lead){
+  let score=0; const bd={};
+  const enr=getEnrichment(lead.id);
+  const allFX=[...lead.fxSignals,...(enr.fxSignals||[])];
+  const allTriggers=[...lead.triggerEvents,...(enr.triggerEvents||[])];
+
+  // FX likelihood 0-25
+  const vFX=allFX.filter(s=>s.ev==='VERIFIED').length;
+  const sFX=allFX.filter(s=>s.ev==='STRONG_SIGNAL').length;
+  const iFX=allFX.filter(s=>s.ev==='INFERRED').length;
+  bd.fxLikelihood=Math.min(25,vFX*10+sFX*6+iFX*2+(lead.curr.length>1?3:0));
+  score+=bd.fxLikelihood;
+
+  // Company value 0-20
+  const t=enr.turnover||lead.turnover;
+  const g=enr.turnoverGrowthPct||lead.growth;
+  let cv=t>=50?20:t>=25?15:t>=10?10:t>=5?6:3;
+  if(g>15)cv=Math.min(20,cv+4);else if(g>8)cv=Math.min(20,cv+2);
+  bd.companyValue=cv;score+=cv;
+
+  // Trigger events 0-20 (only meaningful business triggers score here, not old appointments)
+  const usable=getUsableTriggers(lead);
+  const vT=usable.filter(s=>s.ev==='VERIFIED').length;
+  const sT=usable.filter(s=>s.ev==='STRONG_SIGNAL').length;
+  let te=vT*10+sT*6+(g>20?6:g>12?3:0);
+  bd.triggerEvent=Math.min(20,te);score+=bd.triggerEvent;
+
+  // Contact quality 0-15 (role source matters, not just appointment age)
+  const saved=getSavedLeadData(lead.id);
+  let cq=0;
+  const contactSource=enr.contactSource||'CH_OFFICERS';
+  if(enr.fd||lead.fd){
+    const role=enr.fdRole||lead.fdRole||'';
+    if(contactSource==='COMPANY_WEBSITE')cq+=15;
+    else if(contactSource==='SEARCH')cq+=12;
+    else if(role.includes('Controller')||role.includes('Head of Finance'))cq+=9;
+    else if(contactSource==='CH_OFFICERS')cq+=8;
+    else cq+=4;
+    if(role.includes('Director')||role.includes('CFO'))cq=Math.min(15,cq+2);
+    const mths=monthsSince(lead.appointed);
+    if(mths<=6)cq=Math.min(15,cq+2); // recent confirmation bonus
+    if(saved.mobile)cq=Math.min(15,cq+3);
+  }
+  bd.contactQuality=Math.min(15,cq);score+=bd.contactQuality;
+
+  // Hedge opportunity 0-10
+  const noHedge=allFX.some(s=>s.label.toLowerCase().includes('no hedge')||s.label.toLowerCase().includes('hedge status'));
+  let ho=(noHedge?4:0)+(g>10?3:0)+(lead.curr.length>=3?3:0);
+  bd.hedgeOpportunity=Math.min(10,ho);score+=bd.hedgeOpportunity;
+
+  // Callability 0-10
+  bd.callability=Math.min(10,((enr.fd||lead.fd)?6:0)+(saved.mobile?4:0));
+  score+=bd.callability;
+
+  const tier=score>=90?'DIAL_IMMEDIATELY':score>=75?'HIGH_PRIORITY':score>=60?'STANDARD':score>=40?'RESEARCH_WHEN_QUEUE_THIN':'ARCHIVE';
+  return{score,tier,bd};
 }
 
-function applySearch() {
-  const q = document.getElementById('searchInput').value.toLowerCase();
-  const stageF = document.getElementById('stageFilter').value;
-  filteredLeads = allLeads.filter(l => {
-    const matchQ = !q || l.name.toLowerCase().includes(q) || (l.fd && l.fd.toLowerCase().includes(q));
-    const matchStage = (stageQuick === 'all' && stageF === 'all') ||
-      (stageQuick !== 'all' ? (stages[l.name] || 'New') === stageQuick : (stageF === 'all' || (stages[l.name] || 'New') === stageF));
-    return matchQ && matchStage;
-  });
-  currentPage = 0;
+// ═══════════════════════════════════════════════════
+// PERSISTENCE
+// ═══════════════════════════════════════════════════
+function getSavedLeadData(id){try{return JSON.parse(localStorage.getItem('disco_lead_'+id)||'{}')}catch{return{}}}
+function setSavedLeadData(id,data){try{localStorage.setItem('disco_lead_'+id,JSON.stringify(data))}catch{}}
+function getCallHistory(id){try{return JSON.parse(localStorage.getItem('disco_calls_'+id)||'[]')}catch{return[]}}
+function addCallRecord(id,rec){const h=getCallHistory(id);h.unshift(rec);try{localStorage.setItem('disco_calls_'+id,JSON.stringify(h))}catch{}}
+function getSavedEdit(id){return localStorage.getItem('disco_edit_'+id)||'';}
+function setSavedEdit(id,txt){localStorage.setItem('disco_edit_'+id,txt);}
+function clearSavedEdit(id){localStorage.removeItem('disco_edit_'+id);}
+function getEnrichment(id){try{return JSON.parse(localStorage.getItem('disco_enrichment_v1_'+id)||'{}')}catch{return{}}}
+function setEnrichment(id,data){try{localStorage.setItem('disco_enrichment_v1_'+id,JSON.stringify({...getEnrichment(id),...data,updatedAt:new Date().toISOString()}))}catch{}}
+function getEnrichStatus(id){return getEnrichment(id).status||'NOT_ENRICHED';}
+
+// ═══════════════════════════════════════════════════
+// ENRICHMENT CONFIG
+// ─────────────────────────────────────────────────
+// Companies House requires an API key via HTTP Basic Auth on every request.
+// Do NOT place a Companies House key in this file or anywhere in the frontend.
+// To enable live CH enrichment, deploy a private serverless proxy (Cloudflare Worker,
+// Netlify Function, etc.) that adds the key server-side, then set companiesHouseProxyUrl.
+//
+// companiesHouseProxyUrl: URL of your private proxy, e.g. https://my-worker.workers.dev/ch
+//   The proxy should accept:  GET /company/:number, GET /company/:number/officers
+//   and add the CH API key server-side. Leave empty string to disable CH enrichment.
+//
+// websiteProxyUrl: CORS proxy for website extraction.
+//   Prototype fallback only — replace with a controlled proxy for production.
+//
+// enableDirectCompaniesHouse: keep false. Setting true would expose the CH API to
+//   unauthenticated calls from the browser. The CH API returns 401 without credentials.
+// ═══════════════════════════════════════════════════
+const ENRICHMENT_CONFIG = {
+  // Option A — Cloudflare Worker proxy (deploy disco-ch-proxy, set this URL)
+  // e.g. "https://disco-ch-proxy.zacld.workers.dev"
+  companiesHouseProxyUrl: "",
+
+  // Option B — GitHub Actions enrichment (automatic — loaded from enrichment.json on startup)
+  // No config needed — just add CH_API_KEY to GitHub Secrets and the Action runs nightly
+
+  // Website CORS proxy — prototype fallback only
+  websiteProxyUrl: "https://api.allorigins.win/raw?url=",
+
+  enableDirectCompaniesHouse: false  // must remain false on public deployments
+};
+
+// ─── CH adapter functions ────────────────────────
+// These call the configured proxy URL only.
+// When companiesHouseProxyUrl is empty, they return NOT_CONFIGURED immediately.
+// Future proxy: receives route → adds CH API key server-side → returns JSON.
+
+async function fetchJsonWithTimeout(url, ms) {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const r = await fetch(url, { signal: ctrl.signal });
+    clearTimeout(id);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.json();
+  } catch(e) { clearTimeout(id); throw e; }
+}
+
+async function searchCompaniesHouseCompany(companyName) {
+  if (!ENRICHMENT_CONFIG.companiesHouseProxyUrl) return { status: 'NOT_CONFIGURED' };
+  const url = `${ENRICHMENT_CONFIG.companiesHouseProxyUrl}/search/companies?q=${encodeURIComponent(companyName)}&items_per_page=3`;
+  return fetchJsonWithTimeout(url, 8000);
+}
+
+async function fetchCompaniesHouseOfficers(companyNumber) {
+  if (!ENRICHMENT_CONFIG.companiesHouseProxyUrl) return { status: 'NOT_CONFIGURED' };
+  const url = `${ENRICHMENT_CONFIG.companiesHouseProxyUrl}/company/${encodeURIComponent(companyNumber)}/officers?items_per_page=50`;
+  return fetchJsonWithTimeout(url, 8000);
+}
+
+async function fetchCompaniesHouseProfile(companyNumber) {
+  if (!ENRICHMENT_CONFIG.companiesHouseProxyUrl) return { status: 'NOT_CONFIGURED' };
+  const url = `${ENRICHMENT_CONFIG.companiesHouseProxyUrl}/company/${encodeURIComponent(companyNumber)}`;
+  return fetchJsonWithTimeout(url, 8000);
+}
+
+async function fetchCompaniesHouseFilingHistory(companyNumber) {
+  if (!ENRICHMENT_CONFIG.companiesHouseProxyUrl) return { status: 'NOT_CONFIGURED' };
+  const url = `${ENRICHMENT_CONFIG.companiesHouseProxyUrl}/company/${encodeURIComponent(companyNumber)}/filing-history?items_per_page=10`;
+  return fetchJsonWithTimeout(url, 8000);
+}
+
+// ═══════════════════════════════════════════════════
+// ENRICHMENT ENGINE
+// ═══════════════════════════════════════════════════
+const FINANCE_ROLES=['chief financial officer','cfo','group finance director','finance director','financial director','director of finance','commercial finance director','head of finance','financial controller','finance manager'];
+
+function roleRank(role){
+  const r=(role||'').toLowerCase();
+  if(r.includes('chief financial')||r.includes(' cfo'))return 10;
+  if(r.includes('group finance director')||r.includes('group cfo'))return 9;
+  if(r.includes('finance director')||r.includes('financial director'))return 8;
+  if(r.includes('director of finance'))return 8;
+  if(r.includes('head of finance'))return 7;
+  if(r.includes('financial controller'))return 6;
+  if(r.includes('finance manager'))return 5;
+  return 0;
+}
+
+function isFinanceRole(role){return roleRank(role)>0;}
+
+function makeSignal(label,value,ev,conf,reason,sourceName,sourceUrl){
+  return{label,value,ev,conf,reason,sourceName:sourceName||'',sourceUrl:sourceUrl||'',retrievedAt:new Date().toISOString()};
+}
+
+// ── Companies House enrichment — requires configured proxy
+// Companies House API requires HTTP Basic Auth on every request.
+// A proxy key must never be placed in this frontend file.
+// When ENRICHMENT_CONFIG.companiesHouseProxyUrl is empty, this function
+// returns NOT_CONFIGURED immediately and makes no network request.
+async function enrichFromCompaniesHouse(lead, progress) {
+  const results = { fd:null, fdRole:null, companyNumber:null, sicCodes:[], companyStatus:null, officerSignals:[], sources:[], configured:false };
+  const enr = getEnrichment(lead.id);
+
+  if (!ENRICHMENT_CONFIG.companiesHouseProxyUrl) {
+    progress('Companies House: proxy not configured — skipping');
+    results.notConfigured = true;
+    return results;
+  }
+
+  results.configured = true;
+  const compNum = enr.companyNumber || lead.companyNumber || null;
+
+  // Step 1: resolve company number via proxy
+  progress('Companies House: searching via proxy...');
+  let chNum = compNum;
+  if (!chNum) {
+    try {
+      const d = await searchCompaniesHouseCompany(lead.name);
+      if (d.status === 'NOT_CONFIGURED') { results.notConfigured = true; return results; }
+      const match = d.items && d.items[0];
+      if (match) {
+        chNum = match.company_number;
+        results.companyNumber = chNum;
+        results.companyStatus = match.company_status;
+        results.sources.push({ sourceName:'Companies House search', sourceUrl:`https://find-and-update.company-information.service.gov.uk/company/${chNum}`, retrievedAt:new Date().toISOString() });
+      }
+    } catch(e) { progress(`Companies House search failed: ${e.message.substring(0,40)}`); return results; }
+  }
+
+  if (!chNum) { progress('Companies House: company not found — skipping officers'); return results; }
+
+  // Step 2: officers via proxy
+  progress('Companies House: fetching officers via proxy...');
+  try {
+    const d = await fetchCompaniesHouseOfficers(chNum);
+    if (d.status === 'NOT_CONFIGURED') return results;
+    const officers = (d.items || []).filter(o => !o.resigned_on);
+    let bestOfficer = null, bestRank = 0;
+    for (const o of officers) {
+      const role = o.officer_role || '';
+      const title = o.occupation || '';
+      const rk = roleRank(role) || roleRank(title);
+      if (rk > bestRank) { bestRank = rk; bestOfficer = { name: o.name, role: role||title, rk }; }
+    }
+    if (bestOfficer && bestOfficer.rk >= 5) {
+      const parts = bestOfficer.name.split(',');
+      const formattedName = parts.length > 1 ? `${parts[1].trim()} ${parts[0].trim()}` : bestOfficer.name;
+      results.fd = formattedName;
+      results.fdRole = bestOfficer.role || 'Finance Director';
+      results.contactSource = 'CH_OFFICERS';
+      results.sources.push({ sourceName:'Companies House officers', sourceUrl:`https://find-and-update.company-information.service.gov.uk/company/${chNum}/officers`, retrievedAt:new Date().toISOString() });
+    }
+    results.officerSignals = officers.slice(0,8).map(o => {
+      const parts = (o.name||'').split(',');
+      const n = parts.length > 1 ? `${parts[1].trim()} ${parts[0].trim()}` : o.name;
+      return { name:n, role:o.officer_role||'', appointed:o.appointed_on||'' };
+    });
+  } catch(e) { progress(`Companies House officers failed: ${e.message.substring(0,40)}`); }
+
+  return results;
+}
+
+// ── Company website extraction
+// Prototype fallback only.
+// Replace with a controlled serverless proxy for reliable production use.
+// Only the public target website URL is sent to the CORS proxy.
+// No user-entered data (mobile numbers, notes, call history) is ever sent.
+async function enrichFromWebsite(lead, progress) {
+  const results = { fd:null, fdRole:null, fxSignals:[], triggerEvents:[], companySignals:[], sources:[] };
+  const enr = getEnrichment(lead.id);
+  const website = enr.website || lead.website || null;
+  if (!website) return results;
+
+  const proxyBase = ENRICHMENT_CONFIG.websiteProxyUrl;
+  if (!proxyBase) { progress('Website: no proxy configured — skipping'); return results; }
+
+  const baseUrl = website.replace(/\/$/, '');
+  const pagesToTry = ['', '/about', '/about-us', '/team'];
+
+  for (const path of pagesToTry) {
+    // Only send the public website URL — no user data
+    const targetUrl = baseUrl + path;
+    progress(`Website: checking ${targetUrl.replace(/https?:\/\//, '').substring(0,40)}...`);
+    try {
+      const proxyUrl = proxyBase + encodeURIComponent(targetUrl);
+      const r = await fetchWithTimeout(proxyUrl, 8000);
+      if (!r.ok) continue;
+
+      let html;
+      try { html = await r.text(); } catch(e) { continue; }
+      if (!html || html.length < 100) continue;
+
+      const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').toLowerCase();
+
+      for (const role of FINANCE_ROLES) {
+        const idx = text.indexOf(role);
+        if (idx > -1) {
+          const snippet = text.substring(Math.max(0, idx-80), idx + role.length + 80);
+          const nameMatch = snippet.match(/([a-z]+\s+[a-z]+)\s+(?:is|–|-|,)?\s*(?:our|the)?\s*(?:group\s+)?(?:finance|financial|chief)/i);
+          if (nameMatch) {
+            const rawName = nameMatch[1];
+            const capitalized = rawName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            if (roleRank(role) > roleRank(results.fdRole || '')) {
+              results.fd = capitalized;
+              results.fdRole = role.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+              results.contactSource = 'COMPANY_WEBSITE';
+              results.sources.push({ sourceName:'Company website'+(path?(' — '+path):''), sourceUrl:targetUrl, retrievedAt:new Date().toISOString() });
+            }
+          }
+          // FX language — extract one signal per page
+          const fxTerms = ['overseas','international','export','import','foreign currency','currency risk','forward contract','hedging','distributor','global'];
+          for (const term of fxTerms) {
+            if (text.includes(term) && !results.fxSignals.find(s => s.label.includes(term))) {
+              results.fxSignals.push(makeSignal(`Website: "${term}" language found`, term, 'STRONG_SIGNAL', .70,
+                `Company website contains "${term}" — indicates international business activity`, 'Company website', targetUrl));
+              break;
+            }
+          }
+          break;
+        }
+      }
+      if (results.fd) break;
+    } catch(e) { continue; }
+  }
+  return results;
+}
+
+// ── Fetch with timeout (returns Response, not parsed JSON)
+async function fetchWithTimeout(url, ms) {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), ms);
+  try { const r = await fetch(url, {signal:ctrl.signal}); clearTimeout(id); return r; }
+  catch(e) { clearTimeout(id); throw e; }
+}
+
+// ── Main enrichment orchestrator
+async function enrichCompany(leadId){
+  const lead=allLeads.find(l=>l.id===leadId);
+  if(!lead)return;
+
+  // Guard: don't run if already enriching
+  if(getEnrichStatus(leadId)==='ENRICHING')return;
+
+  setEnrichment(leadId,{status:'ENRICHING',steps:[]});
+  renderCard(lead);
+
+  const steps=[];
+  const progress=(msg)=>{
+    steps.push({msg,ts:new Date().toISOString()});
+    setEnrichment(leadId,{status:'ENRICHING',steps:[...steps]});
+    // Update progress display if card is open
+    const el=document.getElementById('enrichProgress');
+    if(el)el.innerHTML=steps.map((s,i)=>`<div class="step ${i===steps.length-1?'active':'done'}">▸ ${s.msg}</div>`).join('');
+  };
+
+  let partial = false;
+  const mergedSignals = {fxSignals:[], triggerEvents:[], companySignals:[], sources:[]};
+
+  // ── 1. Companies House (requires proxy — see ENRICHMENT_CONFIG)
+  const chConfigured = !!ENRICHMENT_CONFIG.companiesHouseProxyUrl;
+  if (!chConfigured) {
+    progress('COMPANIES HOUSE: PROXY NOT CONFIGURED');
+    partial = true;
+  } else {
+    progress('Starting Companies House lookup...');
+    try {
+      const ch = await enrichFromCompaniesHouse(lead, progress);
+      if (ch.notConfigured) {
+        progress('COMPANIES HOUSE: PROXY NOT CONFIGURED');
+        partial = true;
+      } else {
+        if (ch.fd && !getEnrichment(leadId).fd) {
+          setEnrichment(leadId, {fd:ch.fd, fdRole:ch.fdRole, contactSource:ch.contactSource||'CH_OFFICERS', companyNumber:ch.companyNumber, companyStatus:ch.companyStatus});
+        }
+        if (ch.officerSignals && ch.officerSignals.length) {
+          setEnrichment(leadId, {officerList:ch.officerSignals});
+        }
+        mergedSignals.sources.push(...(ch.sources||[]));
+        progress('Companies House: complete');
+      }
+    } catch(e) {
+      progress(`Companies House: failed (${e.message.substring(0,40)})`);
+      partial = true;
+    }
+  }
+
+  // ── 2. Company website
+  const enrNow=getEnrichment(leadId);
+  if(enrNow.website||lead.website){
+    progress('Starting website extraction...');
+    try{
+      const ws=await enrichFromWebsite(lead,progress);
+      if(ws.fd&&roleRank(ws.fdRole||'')>roleRank(enrNow.fdRole||'')){
+        setEnrichment(leadId,{fd:ws.fd,fdRole:ws.fdRole,contactSource:'COMPANY_WEBSITE'});
+      }
+      mergedSignals.fxSignals.push(...ws.fxSignals);
+      mergedSignals.sources.push(...ws.sources);
+      if(ws.fxSignals.length)setEnrichment(leadId,{fxSignals:[...(enrNow.fxSignals||[]),...ws.fxSignals]});
+      progress('Website extraction: complete');
+    }catch(e){
+      progress(`Website: failed (${e.message.substring(0,40)})`);
+      partial=true;
+    }
+  }else{
+    progress('Website: no URL configured — skipping');
+  }
+
+  // ── 3. Finalise
+  progress('Recalculating score...');
+  const finalStatus=partial?'PARTIAL':'ENRICHED';
+  setEnrichment(leadId,{status:finalStatus,steps,completedAt:new Date().toISOString()});
+
+  // Refresh lead in allLeads with new score
+  const opp=calcOpportunityScore(lead);
+  lead.oppScore=opp.score;lead.tier=opp.tier;lead.bd=opp.bd;
+  clearSavedEdit(leadId); // reset any manual edit so new angle generates fresh
+
+  showToast(`Enrichment ${finalStatus.toLowerCase()} ✓`);
+  renderCard(lead);
   renderTable();
 }
 
-function setStageQuick(s, btn) {
-  stageQuick = s;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  applySearch();
+// ── Manual JSON import
+function previewManualImport(leadId){
+  const raw=document.getElementById('manualJsonInput').value.trim();
+  const errEl=document.getElementById('jsonError');
+  const prevEl=document.getElementById('jsonPreview');
+  errEl.textContent='';prevEl.style.display='none';
+  if(!raw)return;
+  try{
+    const parsed=JSON.parse(raw);
+    const allowed=['financeContacts','companySignals','fxSignals','triggerEvents','website','companyNumber','turnover','employeeCount','turnoverGrowthPct','fd','fdRole'];
+    const preview={};
+    for(const k of allowed){if(parsed[k]!==undefined)preview[k]=parsed[k];}
+    prevEl.textContent=JSON.stringify(preview,null,2);
+    prevEl.style.display='block';
+    prevEl.dataset.parsed=JSON.stringify(preview);
+  }catch(e){
+    errEl.textContent='Invalid JSON: '+e.message;
+  }
 }
 
-function renderTable() {
-  const start = currentPage * PAGE;
-  const page = filteredLeads.slice(start, start + PAGE);
-  const area = document.getElementById('tableArea');
+function applyManualImport(leadId){
+  const prevEl=document.getElementById('jsonPreview');
+  if(!prevEl||!prevEl.dataset.parsed){showToast('Nothing to import — paste JSON and preview first');return;}
+  try{
+    const parsed=JSON.parse(prevEl.dataset.parsed);
+    // Preserve user-entered fields
+    const saved=getSavedLeadData(leadId);
+    const enr=getEnrichment(leadId);
+    const merged={...enr,...parsed,status:'ENRICHED',source:'MANUAL',updatedAt:new Date().toISOString()};
+    // Never overwrite mobile/DDI
+    if(saved.mobile)merged._preservedMobile=saved.mobile;
+    setEnrichment(leadId,merged);
+    // Refresh score
+    const lead=allLeads.find(l=>l.id===leadId);
+    if(lead){
+      const opp=calcOpportunityScore(lead);
+      lead.oppScore=opp.score;lead.tier=opp.tier;lead.bd=opp.bd;
+      clearSavedEdit(leadId);
+      renderCard(lead);renderTable();
+    }
+    showToast('Manual enrichment applied ✓');
+  }catch(e){showToast('Import failed: '+e.message);}
+}
 
-  if (page.length === 0) {
-    area.innerHTML = '<div class="empty-state"><div class="big">◈</div><p>No leads match current filters</p></div>';
-    document.getElementById('paginationRow').style.display = 'none';
-    return;
-  }
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let currentNiche='machinery',allLeads=[],filteredLeads=[],currentPage=0;
+const PAGE=20;
+let sortCol='oppScore',sortDir=-1,stageQuick='all',selectedLeadId=null;
 
-  const stageColors = {New:'var(--text3)',Researched:'var(--accent)',Called:'var(--amber)',['Follow-up']:'var(--purple)',Converted:'var(--green)',Dead:'var(--red)'};
+function setNiche(el,niche){document.querySelectorAll('.sidebar-item').forEach(e=>e.classList.remove('active'));el.classList.add('active');currentNiche=niche;}
+function yrsInPost(yr){return yr?2026-yr:null;}
 
-  const rows = page.map((l,i) => {
-    const stage = stages[l.name] || 'New';
-    const stageCol = stageColors[stage] || 'var(--text3)';
-    const fdCell = l.fd
-      ? `<div class="fd-name">${l.fd}</div><div class="fd-since">${yrsInPost(l.appointed)} yr${yrsInPost(l.appointed)!==1?'s':''} in post — since ${l.appointed}</div>`
-      : '<span class="no-fd">not found</span>';
-    const currs = l.curr.map((c,ci) => `<span class="currency-tag${ci===0?' primary':''}">${c}</span>`).join('');
-    const hasNotes = notes[l.name] ? '●' : '';
-    return `<tr>
-      <td style="width:18%"><div class="company-name" title="${l.name}">${l.name}</div><div class="company-sic">SIC ${l.sic} · ${l.region}</div></td>
-      <td style="width:18%">${fdCell}</td>
-      <td style="width:8%"><span class="score-pill ${scoreClass(l.score)}">${l.score}/10</span></td>
-      <td style="width:9%"><span class="turnover">£${l.turnover}m</span></td>
-      <td style="width:6%;font-family:var(--mono);font-size:12px;color:var(--text2)">${l.emp}</td>
+// ═══════════════════════════════════════════════════
+// PULL + TABLE
+// ═══════════════════════════════════════════════════
+async function pullLeads(){
+  const btn=document.getElementById('pullBtn');
+  btn.disabled=true;btn.textContent='⟳ PULLING...';
+  document.getElementById('progressSection').style.display='block';
+  document.getElementById('tableArea').innerHTML='<div class="empty-state"><div class="big">◈</div><p>Discovering companies...</p></div>';
+  document.getElementById('paginationRow').style.display='none';
+  closeCard();
+  const steps=[[15,'Querying Companies House SIC codes...'],[30,'Filtering active UK companies...'],[50,'Sourcing FD names from officer data...'],[65,'Extracting turnover from filed accounts...'],[80,'Scoring FX signals and opportunity...'],[100,'Complete.']];
+  for(const [pct,msg] of steps){document.getElementById('statusMsg').textContent=msg;document.getElementById('progressFill').style.width=pct+'%';await new Promise(r=>setTimeout(r,300));}
+  const minT=parseInt(document.getElementById('minTurnover').value);
+  const fdF=document.getElementById('fdFilter').value;
+  const scoreF=parseInt(document.getElementById('scoreFilter').value);
+  let leads=(LEADS_DB[currentNiche]||[]).map(l=>{
+    const opp=calcOpportunityScore(l);
+    const saved=getSavedLeadData(l.id);
+    const enr=getEnrichment(l.id);
+    return{...l,oppScore:opp.score,tier:opp.tier,bd:opp.bd,stage:saved.stage||'New',mobile:saved.mobile||'',enrichStatus:enr.status||'NOT_ENRICHED'};
+  });
+  if(minT>0)leads=leads.filter(l=>l.turnover>=minT);
+  if(fdF==='fd_only')leads=leads.filter(l=>l.fd);
+  if(fdF==='new_fd')leads=leads.filter(l=>l.fd&&yrsInPost(l.appointed)<=2);
+  if(scoreF>0)leads=leads.filter(l=>l.oppScore>=scoreF);
+  leads.sort((a,b)=>b.oppScore-a.oppScore||b.turnover-a.turnover);
+  allLeads=leads;
+  Object.keys(LEADS_DB).forEach(n=>{const el=document.getElementById('cnt-'+n);if(el)el.textContent=LEADS_DB[n].length;});
+  updateStats();applySearch();
+  document.getElementById('exportBtn').disabled=false;
+  document.getElementById('progressSection').style.display='none';
+  btn.disabled=false;btn.textContent='▶ PULL LEADS';
+}
+
+function updateStats(){
+  const l=allLeads;
+  document.getElementById('statTotal').textContent=l.length;
+  document.getElementById('statFD').textContent=l.filter(x=>x.fd).length;
+  document.getElementById('statHigh').textContent=l.filter(x=>x.oppScore>=75).length;
+  const avg=l.length?Math.round(l.reduce((s,x)=>s+x.turnover,0)/l.length):0;
+  document.getElementById('statAvg').textContent=l.length?`£${avg}m`:'—';
+  document.getElementById('statNewFD').textContent=l.filter(x=>x.fd&&yrsInPost(x.appointed)<=2).length;
+}
+
+function applySearch(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const stageF=document.getElementById('stageFilter').value;
+  filteredLeads=allLeads.filter(l=>{
+    const mQ=!q||l.name.toLowerCase().includes(q)||(l.fd&&l.fd.toLowerCase().includes(q));
+    const s=l.stage||'New';
+    const mS=(stageQuick==='all'&&stageF==='all')||(stageQuick!=='all'?s===stageQuick:stageF==='all'||s===stageF);
+    return mQ&&mS;
+  });
+  currentPage=0;renderTable();
+}
+
+function setStageQuick(s,btn){stageQuick=s;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');applySearch();}
+function tierShort(t){return t==='DIAL_IMMEDIATELY'?'DIAL NOW':t==='HIGH_PRIORITY'?'HIGH':t==='STANDARD'?'STD':t==='RESEARCH_WHEN_QUEUE_THIN'?'LOW':'ARCH';}
+
+function renderTable(){
+  const start=currentPage*PAGE;
+  const page=filteredLeads.slice(start,start+PAGE);
+  const area=document.getElementById('tableArea');
+  if(!page.length){area.innerHTML='<div class="empty-state"><div class="big">◈</div><p>No leads match filters</p></div>';document.getElementById('paginationRow').style.display='none';return;}
+  const sColors={New:'var(--text3)',Researched:'var(--accent)',Called:'var(--amber)','Follow-up':'var(--purple)',Converted:'var(--green)',Dead:'var(--red)'};
+  const rows=page.map(l=>{
+    const s=l.stage||'New';
+    const sc=sColors[s]||'var(--text3)';
+    const enr=getEnrichment(l.id);
+    const fdName=enr.fd||l.fd;
+    const fdRole=enr.fdRole||l.fdRole;
+    const fdCell=fdName?`<div class="fd-name">${fdName}</div><div class="fd-since">${yrsInPost(l.appointed)}yr · ${fdRole||'Finance Director'}</div>`:'<span class="no-fd">not found</span>';
+    const currs=l.curr.map((c,i)=>`<span class="currency-tag${i===0?' primary':''}">${c}</span>`).join('');
+    const sc2=l.oppScore>=75?'s-high':l.oppScore>=60?'s-med':'s-low';
+    const enrichSt=l.enrichStatus||'NOT_ENRICHED';
+    const enrichDot=enrichSt==='ENRICHED'?'<span style="color:var(--green);font-size:10px;">●</span>':enrichSt==='PARTIAL'?'<span style="color:var(--amber);font-size:10px;">◐</span>':'';
+    return`<tr onclick="selectLead('${l.id}')" class="${l.id===selectedLeadId?'selected':''}">
+      <td style="width:22%"><div class="company-name" title="${l.name}">${l.name} ${enrichDot}</div><div class="company-sub">SIC ${l.sic} · ${l.region}</div></td>
+      <td style="width:20%">${fdCell}</td>
+      <td style="width:12%"><span class="score-pill ${sc2}">${l.oppScore}</span><br><span class="tier-badge tier-${l.tier}">${tierShort(l.tier)}</span></td>
+      <td style="width:10%"><span style="font-family:var(--mono);font-size:12px;">£${l.turnover}m</span>${l.growth?`<div class="company-sub">+${l.growth}%</div>`:''}</td>
       <td style="width:14%">${currs}</td>
-      <td style="width:10%;font-family:var(--mono);font-size:11px;color:${stageCol}">${stage}</td>
-      <td style="width:17%" class="action-cell">
-        ${l.fd ? `<button class="cog-btn" onclick="searchCognism('${l.fd}','${l.name.replace(/'/g,"\\'")}')">COGNISM</button>` : ''}
-        <button class="notes-btn" onclick="openModal('${l.name.replace(/'/g,"\\'")}','${stage}')">${hasNotes}LOG</button>
-      </td>
+      <td style="width:10%;font-family:var(--mono);font-size:10px;color:${sc}">${s}</td>
     </tr>`;
   }).join('');
-
-  area.innerHTML = `<table>
-    <thead><tr>
-      <th onclick="sortBy('name')">Company</th>
-      <th onclick="sortBy('fd')">FD / Director</th>
-      <th onclick="sortBy('score')" class="${sortCol==='score'?'sorted':''}">FX Score</th>
-      <th onclick="sortBy('turnover')" class="${sortCol==='turnover'?'sorted':''}">Turnover</th>
-      <th onclick="sortBy('emp')">Staff</th>
-      <th>Currencies</th>
-      <th>Stage</th>
-      <th>Actions</th>
-    </tr></thead>
-    <tbody>${rows}</tbody>
-  </table>`;
-
-  const total = filteredLeads.length;
-  const totalPages = Math.ceil(total / PAGE);
-  document.getElementById('pageInfo').textContent = `${start+1}–${Math.min(start+PAGE,total)} of ${total} leads`;
-  document.getElementById('prevBtn').disabled = currentPage === 0;
-  document.getElementById('nextBtn').disabled = currentPage >= totalPages - 1;
-  document.getElementById('paginationRow').style.display = 'flex';
+  area.innerHTML=`<table><thead><tr>
+    <th onclick="sortBy('name')">Company</th>
+    <th onclick="sortBy('fd')">FD / Director</th>
+    <th onclick="sortBy('oppScore')" class="${sortCol==='oppScore'?'sorted':''}">Score</th>
+    <th onclick="sortBy('turnover')" class="${sortCol==='turnover'?'sorted':''}">Turnover</th>
+    <th>Currencies</th><th>Stage</th>
+  </tr></thead><tbody>${rows}</tbody></table>`;
+  const total=filteredLeads.length,tp=Math.ceil(total/PAGE);
+  document.getElementById('pageInfo').textContent=`${start+1}–${Math.min(start+PAGE,total)} of ${total} leads`;
+  document.getElementById('prevBtn').disabled=currentPage===0;
+  document.getElementById('nextBtn').disabled=currentPage>=tp-1;
+  document.getElementById('paginationRow').style.display='flex';
 }
 
-function sortBy(col) {
-  if (sortCol === col) { sortDir *= -1; } else { sortCol = col; sortDir = -1; }
-  allLeads.sort((a,b) => {
-    let av = col==='fd' ? (a.fd||'') : a[col];
-    let bv = col==='fd' ? (b.fd||'') : b[col];
-    if (typeof av === 'string') return sortDir * av.localeCompare(bv);
-    return sortDir * ((av||0) - (bv||0));
-  });
-  filteredLeads.sort((a,b) => {
-    let av = col==='fd' ? (a.fd||'') : a[col];
-    let bv = col==='fd' ? (b.fd||'') : b[col];
-    if (typeof av === 'string') return sortDir * av.localeCompare(bv);
-    return sortDir * ((av||0) - (bv||0));
-  });
-  renderTable();
+function sortBy(col){
+  if(sortCol===col)sortDir*=-1;else{sortCol=col;sortDir=-1;}
+  const fn=(a,b)=>{let av=col==='fd'?(a.fd||''):a[col],bv=col==='fd'?(b.fd||''):b[col];return typeof av==='string'?sortDir*av.localeCompare(bv):sortDir*((av||0)-(bv||0));};
+  allLeads.sort(fn);filteredLeads.sort(fn);renderTable();
+}
+function changePage(d){currentPage+=d;renderTable();}
+
+// ═══════════════════════════════════════════════════
+// CALL CARD
+// ═══════════════════════════════════════════════════
+function selectLead(id){selectedLeadId=id;const lead=allLeads.find(l=>l.id===id);if(lead){renderCard(lead);document.getElementById('cardPanel').classList.add('open');}renderTable();}
+function closeCard(){document.getElementById('cardPanel').classList.remove('open');selectedLeadId=null;renderTable();}
+function toggleSection(hdr){hdr.classList.toggle('collapsed');hdr.nextElementSibling.classList.toggle('hidden');}
+function evBadge(ev){const m={VERIFIED:'✓ VERIFIED',STRONG_SIGNAL:'? STRONG SIGNAL',INFERRED:'~ INFERRED'};return`<span class="ev-badge ev-${ev}">${m[ev]||ev}</span>`;}
+
+function renderCard(lead){
+  const opp=calcOpportunityScore(lead);
+  const saved=getSavedLeadData(lead.id);
+  const history=getCallHistory(lead.id);
+  const enr=getEnrichment(lead.id);
+  const prep=generateCallPrep(lead);
+  const manualEdit=getSavedEdit(lead.id);
+  const displayOpening=manualEdit||prep.bestOpening;
+  const enrichStatus=enr.status||'NOT_ENRICHED';
+  const isEnriching=enrichStatus==='ENRICHING';
+  const newFD=(enr.fd||lead.fd)&&lead.appointed&&(2026-lead.appointed)<=2;
+  const fdName=enr.fd||lead.fd;
+  const fdRole=enr.fdRole||lead.fdRole;
+
+  document.getElementById('cardCompanyName').textContent=lead.name;
+  document.getElementById('cardScoreNum').textContent=opp.score+'/100';
+  document.getElementById('cardTierBadge').innerHTML=`<span class="tier-badge tier-${opp.tier}">${opp.tier.replace(/_/g,' ')}</span> <span class="enrich-badge enrich-${enrichStatus}">${enrichStatus.replace(/_/g,' ')}</span>`;
+
+  // Collect all signals for sources panel
+  const allFXWithSource=[...lead.fxSignals,...(enr.fxSignals||[])].filter(s=>s.sourceUrl||s.sourceName);
+  const allSources=[...(enr.sources||[]),...allFXWithSource.map(s=>({sourceName:s.sourceName||'',sourceUrl:s.sourceUrl||'',label:s.label,retrievedAt:s.retrievedAt||''}))];
+
+  // Officer list from CH
+  const officerRows=(enr.officerList||[]).map(o=>`<div style="font-size:11px;color:var(--text2);margin-bottom:4px;"><span style="color:var(--text);font-weight:500;">${o.name}</span> — ${o.role||'Director'} ${o.appointed?`<span style="color:var(--text3)">(appt: ${o.appointed})</span>`:''}</div>`).join('');
+
+  // Enrich progress display
+  const enrichProgressHTML=isEnriching?`<div class="enrich-progress" id="enrichProgress">${(enr.steps||[]).map((s,i)=>`<div class="step ${i===(enr.steps.length-1)?'active':'done'}">▸ ${s.msg}</div>`).join('')||'Starting...'}</div>`:'';
+
+  const histHTML=history.length?`
+    <div class="card-section">
+      <div class="card-section-hdr" onclick="toggleSection(this)"><span>Call History (${history.length})</span><span class="chevron">▾</span></div>
+      <div class="card-section-body">
+        ${history.map(c=>`<div class="call-hist-item">
+          <div class="call-hist-meta">${c.timestamp} <span class="call-hist-route">${c.route||'—'}</span></div>
+          <div class="call-hist-outcome">${c.outcome||'—'}</div>
+          ${c.notes?`<div class="call-hist-notes">${c.notes}</div>`:''}
+          ${c.callbackDate?`<div class="call-hist-notes">📅 Callback: ${c.callbackDate}</div>`:''}
+        </div>`).join('')}
+      </div>
+    </div>`:'';
+
+  document.getElementById('cardBody').innerHTML=`
+
+    <!-- CALL ANGLE -->
+    <div class="card-section">
+      <div class="card-section-hdr" onclick="toggleSection(this)"><span>Call Angle</span><span class="chevron">▾</span></div>
+      <div class="card-section-body">
+        ${enrichProgressHTML}
+        ${prep.riskWarning?`<div class="risk-block">⚠ ${prep.riskWarning}</div>`:''}
+        <div class="opening-block">
+          <div class="opening-label">Best Opening ${manualEdit?'<span style="color:var(--amber);font-size:9px;">(edited)</span>':''}</div>
+          <div class="opening-text" id="openingDisplay">${displayOpening}</div>
+          <textarea class="opening-edit" id="openingEdit" oninput="autoSaveEdit('${lead.id}',this.value)">${displayOpening}</textarea>
+          ${prep.backupQuestion?`<div class="backup-text" id="backupDisplay">↳ <em>${prep.backupQuestion}</em></div>`:''}
+        </div>
+        ${prep.whyCallNow?`<div class="why-block"><strong>Why call now:</strong> ${prep.whyCallNow}</div>`:''}
+        <div class="action-row">
+          <button class="act-btn primary" onclick="copyText(document.getElementById('openingDisplay').textContent)">Copy Opening</button>
+          <button class="act-btn amber" onclick="toggleEditOpening('${lead.id}')">Edit Opening</button>
+          <button class="act-btn" onclick="refreshCallAngle('${lead.id}')">↺ Refresh Angle</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACT -->
+    <div class="card-section">
+      <div class="card-section-hdr" onclick="toggleSection(this)"><span>Finance Contact</span><span class="chevron">▾</span></div>
+      <div class="card-section-body">
+        ${fdName?`
+          <div class="contact-block">
+            <div class="contact-name">${fdName}</div>
+            <div class="contact-role">${fdRole||'Finance Director'} · ${yrsInPost(lead.appointed)} yr${yrsInPost(lead.appointed)!==1?'s':''} in post</div>
+            <div class="contact-meta">${evBadge(enr.contactSource==='COMPANY_WEBSITE'?'VERIFIED':'STRONG_SIGNAL')} Source: ${enr.contactSource==='COMPANY_WEBSITE'?'Company website':'Companies House officers'}</div>
+            ${newFD?`<div style="margin-top:6px;font-size:11px;color:var(--green);">★ New FD — no incumbent broker relationship established</div>`:''}
+            <div class="contact-field" style="margin-top:10px;">
+              <span style="font-family:var(--mono);font-size:10px;color:var(--text3);width:52px;flex-shrink:0;">MOBILE</span>
+              <input type="text" id="mobileInput" placeholder="Paste from Cognism / Lusha…" value="${saved.mobile||''}" oninput="saveMobile('${lead.id}',this.value)">
+              ${saved.mobile?`<button class="paste-btn" onclick="copyText('${saved.mobile}')">Copy</button>`:''}
+            </div>
+            <div class="contact-field">
+              <span style="font-family:var(--mono);font-size:10px;color:var(--text3);width:52px;flex-shrink:0;">DDI</span>
+              <input type="text" id="ddiInput" placeholder="Direct dial…" value="${saved.ddi||''}" oninput="saveDDI('${lead.id}',this.value)">
+            </div>
+          </div>
+          <div class="action-row">
+            <button class="act-btn primary" onclick="openCognism('${escJs(fdName)}','${escJs(lead.name)}')">Open Cognism ↗</button>
+            <button class="act-btn" onclick="openLusha('${escJs(fdName)}','${escJs(lead.name)}')">Lusha ↗</button>
+            <button class="act-btn" onclick="openLinkedIn('${escJs(fdName)}','${escJs(lead.name)}')">LinkedIn ↗</button>
+            <button class="act-btn green" onclick="copyNameCompany('${escJs(fdName)}','${escJs(lead.name)}')">Copy Name + Co</button>
+          </div>`
+        :`<p style="font-size:12px;color:var(--text3);">No finance contact found in available data.</p>
+          <div class="action-row" style="margin-top:10px;">
+            <button class="act-btn" onclick="searchFD('${escJs(lead.name)}')">Search FD ↗</button>
+            <button class="act-btn" onclick="openLinkedIn('','${escJs(lead.name)}')">LinkedIn ↗</button>
+          </div>
+          <div class="contact-field" style="margin-top:10px;">
+            <input type="text" id="manualFDInput" placeholder="Enter FD name if found…" value="${saved.manualFD||''}" oninput="saveManualFD('${lead.id}',this.value)">
+          </div>`}
+        ${officerRows?`
+          <div style="margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">CH Officers (for reference)</div>
+          ${officerRows}`:''}
+      </div>
+    </div>
+
+    <!-- COMPANY INTELLIGENCE -->
+    <div class="card-section">
+      <div class="card-section-hdr" onclick="toggleSection(this)"><span>Company Intelligence</span><span class="chevron">▾</span></div>
+      <div class="card-section-body">
+        <div class="info-grid" style="margin-bottom:12px;">
+          <div class="info-cell"><div class="info-cell-label">Turnover</div><div class="info-cell-val">£${enr.turnover||lead.turnover}m${lead.growth?` <span style="font-size:11px;color:var(--green)">+${lead.growth}%</span>`:''}</div></div>
+          <div class="info-cell"><div class="info-cell-label">Employees</div><div class="info-cell-val">${enr.employeeCount||lead.emp}</div></div>
+          <div class="info-cell"><div class="info-cell-label">SIC</div><div class="info-cell-val" style="font-size:11px;">${lead.sic}</div></div>
+          <div class="info-cell"><div class="info-cell-label">Region</div><div class="info-cell-val" style="font-size:12px;">${lead.region}</div></div>
+        </div>
+        <!-- ENRICH BUTTON -->
+        <div class="action-row" style="margin-bottom:12px;">
+          <button class="act-btn enrich" id="enrichBtn" onclick="enrichCompany('${lead.id}')" ${isEnriching?'disabled':''}>
+            ${isEnriching?'⟳ ENRICHING…':'◈ ENRICH COMPANY'}
+          </button>
+          <button class="act-btn" onclick="openWebsite('${escJs(lead.name)}')">Website ↗</button>
+          <button class="act-btn" onclick="openCHSearch('${escJs(lead.name)}')">Companies House ↗</button>
+          <button class="act-btn" onclick="searchNews('${escJs(lead.name)}')">News ↗</button>
+        </div>
+        ${!ENRICHMENT_CONFIG.companiesHouseProxyUrl?`<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:10px;padding:6px 8px;background:var(--bg3);border-radius:3px;border:1px solid var(--border);">COMPANIES HOUSE: PROXY NOT CONFIGURED — use manual enrichment or click Companies House ↗</div>`:''}
+        ${enrichStatus!=='NOT_ENRICHED'?`<div style="font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:10px;">Last enriched: ${enr.completedAt?new Date(enr.completedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—'}</div>`:''}
+        <div style="margin-bottom:8px;font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;">FX Signals</div>
+        ${[...lead.fxSignals,...(enr.fxSignals||[])].map(s=>`<div class="signal-row"><div>${evBadge(s.ev)}</div>
+          <div class="signal-text"><div>${s.label} — <strong style="color:var(--accent)">${s.value}</strong></div>
+          <div class="signal-reason">${s.reason}</div>
+          ${s.sourceName?`<div class="signal-source">Source: ${s.sourceName}</div>`:''}</div></div>`).join('')}
+        ${lead.triggerEvents.length||((enr.triggerEvents||[]).length)?`
+          <div style="margin-top:12px;margin-bottom:8px;font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;">Trigger Events</div>
+          ${[...lead.triggerEvents,...(enr.triggerEvents||[])].map(t=>`<div class="signal-row"><div>${evBadge(t.ev)}</div>
+            <div class="signal-text"><div>${t.label} — <strong style="color:var(--amber)">${t.value}</strong></div>
+            <div class="signal-reason">${t.reason}</div></div></div>`).join('')}`:''}
+      </div>
+    </div>
+
+    <!-- SOURCES & EVIDENCE -->
+    <div class="card-section">
+      <div class="card-section-hdr collapsed" onclick="toggleSection(this)"><span>Sources &amp; Evidence</span><span class="chevron">▾</span></div>
+      <div class="card-section-body hidden">
+        ${allSources.length?allSources.map(s=>`<div class="source-item">
+          <div class="source-label"><strong>${s.sourceName||s.label||'—'}</strong>${s.label&&s.sourceName?` — ${s.label}`:''}<br>
+          ${s.sourceUrl?`<a class="source-url" href="${s.sourceUrl}" target="_blank">${s.sourceUrl}</a>`:'<span style="color:var(--text3)">No URL</span>'}
+          ${s.retrievedAt?`<br><span class="source-date">${new Date(s.retrievedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</span>`:''}
+          </div></div>`).join('')
+        :'<p style="font-size:12px;color:var(--text3);">No sources yet — run Enrich Company to gather evidence.</p>'}
+        <div style="margin-top:10px;">
+          <button class="act-btn" onclick="openCHSearch('${escJs(lead.name)}')">Companies House ↗</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCORE BREAKDOWN -->
+    <div class="card-section">
+      <div class="card-section-hdr collapsed" onclick="toggleSection(this)"><span>Score Breakdown</span><span class="chevron">▾</span></div>
+      <div class="card-section-body hidden">
+        ${Object.entries(opp.bd).map(([k,v])=>`<div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;">
+          <span style="color:var(--text2);text-transform:capitalize;">${k.replace(/([A-Z])/g,' $1')}</span>
+          <span style="font-family:var(--mono);color:var(--accent);">${v}</span></div>`).join('')}
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-family:var(--mono);font-size:13px;">
+          <span style="color:var(--text3);">TOTAL</span><span style="color:var(--accent);font-weight:600;">${opp.score}/100</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MANUAL ENRICHMENT -->
+    <div class="card-section">
+      <div class="card-section-hdr collapsed" onclick="toggleSection(this)"><span>Manual Enrichment</span><span class="chevron">▾</span></div>
+      <div class="card-section-body hidden">
+        <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Paste enrichment JSON to manually add signals, contacts, or company data. Existing mobile numbers and call history are preserved.</p>
+        <div class="manual-import-area">
+          <textarea id="manualJsonInput" placeholder='{"fd":"Jane Smith","fdRole":"Finance Director","fxSignals":[{"label":"EU purchasing","value":"EUR","ev":"VERIFIED","conf":0.9,"reason":"Confirmed on website"}]}'></textarea>
+          <div class="json-error" id="jsonError"></div>
+          <pre class="json-preview" id="jsonPreview" style="display:none"></pre>
+          <div class="action-row" style="margin-top:8px;">
+            <button class="act-btn" onclick="previewManualImport('${lead.id}')">Preview</button>
+            <button class="act-btn green" onclick="applyManualImport('${lead.id}')">Apply Import</button>
+            <button class="act-btn" onclick="document.getElementById('manualJsonInput').value='';document.getElementById('jsonPreview').style.display='none';document.getElementById('jsonError').textContent=''">Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOG CALL -->
+    <div class="card-section">
+      <div class="card-section-hdr" onclick="toggleSection(this)"><span>Log Call</span><span class="chevron">▾</span></div>
+      <div class="card-section-body">
+        <div class="log-form">
+          <div><label class="ctrl-label">Route</label>
+            <select id="logRoute"><option value="STRAIGHT_THROUGH">Straight through</option><option value="GATEKEEPER">Gatekeeper</option><option value="VOICEMAIL">Voicemail</option><option value="NO_ANSWER">No answer</option><option value="WRONG_CONTACT">Wrong contact</option><option value="OTHER">Other</option></select>
+          </div>
+          <div><label class="ctrl-label">Outcome</label>
+            <select id="logOutcome"><option value="CALLBACK_BOOKED">Callback booked</option><option value="QUALIFIED_LEAD">Qualified lead</option><option value="SEND_INFO">Send info</option><option value="NOT_INTERESTED">Not interested</option><option value="NO_FX_EXPOSURE">No FX exposure</option><option value="EXISTING_PROVIDER">Existing provider</option><option value="WRONG_PERSON">Wrong person</option><option value="NO_ANSWER">No answer</option><option value="OTHER">Other</option></select>
+          </div>
+          <div><label class="ctrl-label">Stage</label>
+            <select id="logStage"><option value="Called">Called</option><option value="Follow-up">Follow-up</option><option value="Researched">Researched</option><option value="Converted">Converted</option><option value="Dead">Dead</option><option value="New">New</option></select>
+          </div>
+          <div><label class="ctrl-label">Callback date</label><input type="date" id="logCallback"></div>
+          <div><label class="ctrl-label">Currencies mentioned</label><input type="text" id="logCurrencies" placeholder="e.g. EUR, USD"></div>
+          <div><label class="ctrl-label">Current provider</label><input type="text" id="logProvider" placeholder="Moneycorp, bank, etc."></div>
+          <div class="full"><label class="ctrl-label">Notes</label><textarea id="logNotes" placeholder="Gatekeeper name, objections, key info heard…"></textarea></div>
+        </div>
+        <button class="log-submit" onclick="submitCall('${lead.id}')">▶ LOG CALL</button>
+      </div>
+    </div>
+
+    ${histHTML}
+  `;
 }
 
-function changePage(d) {
-  currentPage += d;
-  renderTable();
+// ═══════════════════════════════════════════════════
+// EDIT / REFRESH
+// ═══════════════════════════════════════════════════
+function toggleEditOpening(leadId){
+  const display=document.getElementById('openingDisplay');
+  const edit=document.getElementById('openingEdit');
+  const backup=document.getElementById('backupDisplay');
+  const isEditing=edit.style.display==='block';
+  if(isEditing){
+    const val=edit.value.trim();
+    if(val)setSavedEdit(leadId,val);
+    display.textContent=val||display.textContent;
+    edit.style.display='none';display.style.display='block';
+    if(backup)backup.style.display='';showToast('Opening saved');
+  }else{
+    edit.value=display.textContent;display.style.display='none';
+    if(backup)backup.style.display='none';edit.style.display='block';edit.focus();
+  }
+}
+function autoSaveEdit(id,val){setSavedEdit(id,val);}
+function refreshCallAngle(leadId){
+  clearSavedEdit(leadId);
+  const lead=allLeads.find(l=>l.id===leadId);
+  if(lead){renderCard(lead);showToast('Call angle refreshed');}
 }
 
-function searchCognism(fd, company) {
-  const q = encodeURIComponent(`${fd} ${company}`);
-  window.open(`https://app.cognism.com/search?q=${q}`, '_blank');
+// ═══════════════════════════════════════════════════
+// CARD ACTIONS
+// ═══════════════════════════════════════════════════
+function saveMobile(id,val){const d=getSavedLeadData(id);d.mobile=val;setSavedLeadData(id,d);const l=allLeads.find(x=>x.id===id);if(l)l.mobile=val;}
+function saveDDI(id,val){const d=getSavedLeadData(id);d.ddi=val;setSavedLeadData(id,d);}
+function saveManualFD(id,val){const d=getSavedLeadData(id);d.manualFD=val;setSavedLeadData(id,d);}
+
+function submitCall(id){
+  const rec={timestamp:new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}),route:document.getElementById('logRoute').value,outcome:document.getElementById('logOutcome').value,callbackDate:document.getElementById('logCallback').value,currencies:document.getElementById('logCurrencies').value,currentProvider:document.getElementById('logProvider').value,notes:document.getElementById('logNotes').value};
+  addCallRecord(id,rec);
+  const stage=document.getElementById('logStage').value;
+  const d=getSavedLeadData(id);d.stage=stage;setSavedLeadData(id,d);
+  const l=allLeads.find(x=>x.id===id);if(l)l.stage=stage;
+  showToast('Call logged ✓');renderCard(l);renderTable();
 }
 
-let currentModalCompany = '';
-function openModal(company, stage) {
-  currentModalCompany = company;
-  document.getElementById('modalTitle').textContent = `LOG CALL — ${company.toUpperCase()}`;
-  document.getElementById('modalNotes').value = notes[company] || '';
-  document.getElementById('modalStage').value = stage || 'New';
-  document.getElementById('modalOverlay').classList.add('open');
-  setTimeout(() => document.getElementById('modalNotes').focus(), 50);
+function openCognism(fd,co){window.open(`https://app.cognism.com/search?q=${encodeURIComponent(fd+' '+co)}`,'_blank');}
+function openLusha(fd,co){window.open(`https://www.lusha.com/search/?q=${encodeURIComponent(fd+' '+co)}`,'_blank');}
+function openLinkedIn(fd,co){window.open(`https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent((fd?fd+' ':'')+co)}`,'_blank');}
+function searchFD(co){window.open(`https://www.google.com/search?q=${encodeURIComponent('"'+co+'" finance director CFO')}`,'_blank');}
+function openWebsite(co){window.open(`https://www.google.com/search?q=${encodeURIComponent(co+' official website')}`,'_blank');}
+function openCHSearch(co){window.open(`https://find-and-update.company-information.service.gov.uk/search?q=${encodeURIComponent(co)}`,'_blank');}
+function searchNews(co){window.open(`https://www.google.com/search?q=${encodeURIComponent(co)}&tbs=qdr:m&tbm=nws`,'_blank');}
+function copyNameCompany(fd,co){copyText(fd+' | '+co);}
+function copyText(text){navigator.clipboard.writeText(text).then(()=>showToast('Copied')).catch(()=>{const el=document.createElement('textarea');el.value=text;document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);showToast('Copied');});}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400);}
+function escJs(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"');}
+
+// ═══════════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════════
+function exportCSV(){
+  if(!allLeads.length)return;
+  const headers=['Company','SIC','Region','FD Name','Role','Appointed','Yrs in Post','Opp Score','Tier','Turnover (£m)','Growth %','Employees','Currencies','Stage','Mobile','Call Count','Enrich Status'];
+  const rows=allLeads.map(l=>{const s=getSavedLeadData(l.id);const h=getCallHistory(l.id);const enr=getEnrichment(l.id);return[l.name,l.sic,l.region,enr.fd||l.fd||'',enr.fdRole||l.fdRole||'',l.appointed||'',l.fd?yrsInPost(l.appointed):'',l.oppScore,l.tier,l.turnover,l.growth||'',l.emp,l.curr.join('/'),s.stage||'New',s.mobile||'',h.length,enr.status||'NOT_ENRICHED'];});
+  const csv=[headers,...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`disco_${currentNiche}_${new Date().toISOString().split('T')[0]}.csv`;a.click();
 }
 
-function closeModal(e) {
-  if (e.target === document.getElementById('modalOverlay')) {
-    document.getElementById('modalOverlay').classList.remove('open');
+window.addEventListener('load', async () => {
+  await loadGithubEnrichment();
+  setTimeout(pullLeads, 300);
+});
+
+// ═══════════════════════════════════════════════════
+// GITHUB ACTIONS ENRICHMENT LOADER
+// Loads enrichment.json written by the nightly Action.
+// Merges into localStorage so all card rendering picks it up.
+// Falls back silently if file is missing or empty.
+// ═══════════════════════════════════════════════════
+async function loadGithubEnrichment() {
+  try {
+    // Add cache-bust so GitHub Pages doesn't serve stale file
+    const r = await fetchWithTimeout('./enrichment.json?v=' + Date.now(), 8000);
+    if (!r.ok) return;
+    const data = await r.json();
+    const leads = data.leads || {};
+    let merged = 0;
+    for (const [id, enrData] of Object.entries(leads)) {
+      if (!enrData || enrData.status === 'FAILED') continue;
+      // Only merge if Action data is newer than what's stored
+      const existing = getEnrichment(id);
+      const existingTs = existing.updatedAt || existing.enrichedAt || '2000-01-01';
+      const newTs = enrData.enrichedAt || enrData.generatedAt || '2000-01-01';
+      if (newTs > existingTs || !existing.status || existing.status === 'NOT_ENRICHED') {
+        // Preserve user-entered data — never overwrite mobile, ddi, manualFD
+        const saved = getSavedLeadData(id);
+        setEnrichment(id, {
+          ...enrData,
+          // keep any user-pasted contact data
+          mobile: saved.mobile || undefined,
+          ddi: saved.ddi || undefined,
+          manualFD: saved.manualFD || undefined,
+          _source: 'GITHUB_ACTIONS',
+        });
+        merged++;
+      }
+    }
+    if (merged > 0) {
+      console.log(`DISCO: loaded ${merged} enriched leads from GitHub Actions (${data.generatedAt || 'unknown date'})`);
+      updateEnrichmentBanner(data);
+    }
+  } catch(e) {
+    // Silent fail — enrichment.json may not exist yet
   }
 }
 
-function saveNote() {
-  const n = document.getElementById('modalNotes').value;
-  const s = document.getElementById('modalStage').value;
-  notes[currentModalCompany] = n;
-  stages[currentModalCompany] = s;
-  // Update in allLeads
-  const lead = allLeads.find(l => l.name === currentModalCompany);
-  if (lead) { lead.notes = n; lead.stage = s; }
-  document.getElementById('modalOverlay').classList.remove('open');
-  renderTable();
+function updateEnrichmentBanner(data) {
+  if (!data.enriched && !data.partial) return;
+  const banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;bottom:60px;right:20px;background:var(--bg3);border:1px solid rgba(0,230,118,.3);color:var(--green);font-family:var(--mono);font-size:10px;padding:6px 12px;border-radius:4px;z-index:8000;letter-spacing:.05em;';
+  const date = data.generatedAt ? new Date(data.generatedAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short'}) : '—';
+  banner.textContent = `◈ CH enrichment loaded — ${data.enriched||0} enriched · ${date}`;
+  document.body.appendChild(banner);
+  setTimeout(() => banner.remove(), 5000);
 }
 
-function exportCSV() {
-  if (!allLeads.length) return;
-  const headers = ['Company','SIC','Region','FD Name','Appointed','Yrs in Post','FX Score','Turnover (£m)','Employees','Currencies','Stage','Notes'];
-  const rows = allLeads.map(l => [
-    l.name, l.sic, l.region,
-    l.fd||'', l.appointed||'', l.fd ? yrsInPost(l.appointed) : '',
-    l.score, l.turnover, l.emp,
-    l.curr.join('/'),
-    stages[l.name]||'New',
-    (notes[l.name]||'').replace(/"/g,"'")
-  ]);
-  const csv = [headers,...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download = `disco_${currentNiche}_leads_${new Date().toISOString().split('T')[0]}.csv`;
-  a.click();
-}
-
-// Auto-pull on load
-window.addEventListener('load', () => {
-  setTimeout(pullLeads, 400);
-});
 </script>
 </body>
 </html>

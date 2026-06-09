@@ -1,0 +1,41 @@
+name: Enrich leads from Companies House
+
+on:
+  schedule:
+    - cron: '0 5 * * 1-5'   # 5am Mon-Fri (before your calls)
+  workflow_dispatch:          # also run manually from GitHub Actions tab
+
+permissions:
+  contents: write             # needed to commit enrichment.json back to repo
+
+jobs:
+  enrich:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run enrichment
+        env:
+          CH_API_KEY: ${{ secrets.CH_API_KEY }}
+        run: python scripts/enrich_leads.py
+
+      - name: Commit enrichment.json if changed
+        run: |
+          git config user.name  "DISCO Enrichment Bot"
+          git config user.email "disco-bot@users.noreply.github.com"
+          git add enrichment.json
+          if git diff --staged --quiet; then
+            echo "No changes to enrichment.json — skipping commit"
+          else
+            git commit -m "chore: update enrichment data [skip ci]"
+            git push
+          fi

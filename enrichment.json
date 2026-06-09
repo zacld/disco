@@ -1,0 +1,9 @@
+{
+  "generatedAt": "2026-06-09T00:00:00Z",
+  "leadCount": 28,
+  "enriched": 0,
+  "partial": 0,
+  "failed": 0,
+  "note": "Run GitHub Action to populate with live Companies House data. Go to Actions tab → Enrich leads → Run workflow.",
+  "leads": {}
+}
