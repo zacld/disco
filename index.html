@@ -541,11 +541,18 @@ function calcOpportunityScore(lead){
   score+=bd.fxLikelihood;
 
   // Company value 0-20
-  const t=enr.turnover||lead.turnover;
-  const g=enr.turnoverGrowthPct||lead.growth;
-  let cv=t>=50?20:t>=25?15:t>=10?10:t>=5?6:3;
-  if(g>15)cv=Math.min(20,cv+4);else if(g>8)cv=Math.min(20,cv+2);
-  bd.companyValue=cv;score+=cv;
+  // Use enrichment turnover if available (more recent); fall back to lead value.
+  // For estimated turnover (INFERRED), apply a confidence penalty to avoid
+  // inflating scores based on band guesses for wide categories like 'full' or 'group'.
+  const t = enr.turnover || lead.turnover;
+  const g = enr.turnoverGrowthPct || lead.growth;
+  const tSource = enr.turnoverSource || '';
+  const isEstimate = tSource.startsWith('ESTIMATE') || !tSource;
+  let cv = t>=50?20 : t>=25?15 : t>=10?10 : t>=5?6 : 3;
+  // Penalise estimates — cap at one tier below verified equivalent
+  if (isEstimate) cv = Math.max(3, cv - 3);
+  if(g>15)cv=Math.min(20,cv+4); else if(g>8)cv=Math.min(20,cv+2);
+  bd.companyValue=cv; score+=cv;
 
   // Trigger events 0-20 (only meaningful business triggers score here, not old appointments)
   const usable=getUsableTriggers(lead);
@@ -1418,12 +1425,16 @@ async function loadRealLeads() {
         triggerEvents: lead.triggerEvents || [],
         companySignals: lead.companySignals || [],
         // Pre-merge enrichment so card renders immediately
+        // IMPORTANT: include turnover/emp so calcOpportunityScore is stable after refresh
         _enriched: {
           fd: lead.fd, fdRole: lead.fdRole, appointed: lead.appointed,
           contactSource: lead.contactSource, fdEvidenceLevel: lead.fdEvidenceLevel,
           officers: lead.officers || [], fxSignals: lead.fxSignals || [],
           sources: lead.sources || [], status: lead.enrichStatus || 'PARTIAL',
           enrichedAt: lead.enrichedAt, companyNumber: lead.companyNumber,
+          turnover: lead.turnover || null,
+          turnoverSource: lead.turnoverSource || null,
+          emp: lead.emp || null,
         }
       });
     }
