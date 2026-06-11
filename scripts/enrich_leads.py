@@ -210,7 +210,51 @@ def estimate_turnover(profile):
     # Default — unknown small company
     return 2, 'ESTIMATE_DEFAULT', 'INFERRED'
 
-def find_best_finance_contact(officers):
+def is_worth_calling(profile, lead_name):
+    """
+    Filter out companies not worth including in the calling list.
+    Returns (keep: bool, reason: str)
+    """
+    if not profile:
+        return True, ''  # keep if we couldn't fetch profile — don't discard blindly
+
+    status = (profile.get('company_status') or '').lower()
+    if status in ('dissolved', 'liquidation', 'receivership', 'converted-closed', 'dormant'):
+        return False, f'status={status}'
+
+    accounts = profile.get('accounts', {})
+    last_accts = accounts.get('last_accounts', {})
+    acct_type = (last_accts.get('type') or '').strip().lower()
+
+    # Skip dormant accounts type explicitly
+    if acct_type == 'dormant':
+        return False, 'accounts=dormant'
+
+    # Skip micro-entities — turnover <£150k, too small to have FX exposure worth calling
+    if acct_type == 'micro-entity':
+        return False, 'accounts=micro-entity'
+
+    # Skip if accounts are very stale (>3 years) — company likely inactive
+    made_up = last_accts.get('made_up_to') or last_accts.get('period_end_on') or ''
+    if made_up:
+        try:
+            year = int(made_up[:4])
+            if year < 2021:
+                return False, f'stale accounts ({made_up})'
+        except ValueError:
+            pass
+
+    # Skip if incorporation is very recent (<1 year) — unlikely to have FX volume yet
+    created = profile.get('date_of_creation', '')
+    if created:
+        try:
+            year = int(created[:4])
+            if year >= 2026:
+                return False, f'too new ({created})'
+        except ValueError:
+            pass
+
+    return True, ''
     best, best_rank = None, 0
     for o in officers:
         occupation = o.get('occupation', '')
@@ -337,7 +381,8 @@ def discover_and_enrich():
         seen = set()
         target = 20
         sic_codes = niche['sic_codes']
-        per_sic = max(3, (target + len(sic_codes[:6]) - 1) // len(sic_codes[:6]))
+        # Fetch more per SIC than needed — quality filter will discard ~40% (dormant/micro)
+        per_sic = max(5, (target * 2 + len(sic_codes[:6]) - 1) // len(sic_codes[:6]))
 
         for sic in sic_codes[:6]:
             if len(niche_leads) >= target:
@@ -352,9 +397,15 @@ def discover_and_enrich():
                 seen.add(cn)
                 name = (company.get('company_name') or company.get('title') or '').title()
 
-                # Full company profile — gives us accounts type + employee count
+                # Full company profile — gives us accounts type, employee count, status
                 profile = get_company_profile(cn)
                 time.sleep(0.3)
+
+                # Quality filter — skip dormant, micro, stale, brand-new companies
+                keep, reason = is_worth_calling(profile, name)
+                if not keep:
+                    print(f'  ✗ {name} ({cn}) — skipped: {reason}')
+                    continue
 
                 # Officers
                 officers = get_officers(cn)
